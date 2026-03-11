@@ -1,8 +1,8 @@
-name: 'naboo_project'
+name: 'naboo_test'
 version: '1.0.0'
 config-version: 2
 
-profile: 'default'
+profile: 'naboo_test'
 
 model-paths: ["models"]
 analysis-paths: ["analyses"]
@@ -19,7 +19,7 @@ clean-targets:
 
 models:
 
-  naboo_project:
+  naboo_test:
 
     staging:
       +materialized: view
@@ -31,7 +31,7 @@ models:
       +schema: intermediate
       +tags: ["intermediate"]
 
-    mart:
+    marts:
       +materialized: table
       +schema: mart
       +tags: ["mart"]
