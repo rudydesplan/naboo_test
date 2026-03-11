@@ -163,7 +163,7 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['Deposit', 'Balance', 'Post stay']
+              values: ['Deposit', 'Balance', 'Post balance']
 
       - name: client_proposal_quote_key
         description: "Clé technique du lien entre la proposition et le quote courant."
