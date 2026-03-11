@@ -5,7 +5,7 @@ models:
     description: >
       Table intermédiaire reconstruisant la relation entre les propositions et les quotes.
       Une proposition peut référencer plusieurs devis correspondant aux différentes étapes
-      du cycle de paiement (DEPOSIT, BALANCE, POST_STAY).
+      du cycle de paiement (DEPOSIT, BALANCE, POST_BALANCE).
 
       Le grain est : 1 ligne = 1 quote associé à une proposition pour un rôle donné.
 
@@ -121,4 +121,5 @@ models:
         description: "Indique si house_id côté proposition et quote correspondent."
 
       - name: is_billing_stage_known
+
         description: "Indique si le stage de facturation est reconnu dans dim_billing_stage."
