@@ -4,7 +4,7 @@ models:
   - name: dim_quote_stage
     description: >
       Modèle intermédiaire identifiant pour chaque proposition le quote le plus avancé
-      dans le cycle de facturation (DEPOSIT, BALANCE, POST_STAY).
+      dans le cycle de facturation (DEPOSIT, BALANCE, POST_BALANCE).
       Le grain est : 1 ligne = 1 proposition avec son quote le plus avancé.
 
     tests:
@@ -198,4 +198,5 @@ models:
           Indique si une incohérence est détectée dans les données du quote
           (incohérence de request, house, payment type ou stage inconnu).
         tests:
+
           - not_null
