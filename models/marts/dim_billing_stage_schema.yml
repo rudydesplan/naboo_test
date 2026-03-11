@@ -15,7 +15,7 @@ models:
           - not_null
           - unique
           - accepted_values:
-              values: ['DEPOSIT', 'BALANCE', 'POST_STAY']
+              values: ['DEPOSIT', 'BALANCE', 'POST_BALANCE']
 
       - name: billing_stage_rank
         description: "Ordre logique de l'étape de facturation."
@@ -24,6 +24,7 @@ models:
           - unique
           - accepted_values:
               values: [1, 2, 3]
+              quote: false
 
       - name: billing_stage_label
         description: "Libellé métier de l'étape de facturation."
@@ -31,4 +32,4 @@ models:
           - not_null
           - unique
           - accepted_values:
-              values: ['Deposit', 'Balance', 'Post stay']
+              values: ['Deposit', 'Balance', 'Post balance']

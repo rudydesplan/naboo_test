@@ -123,18 +123,18 @@ models:
               min_value: 0
 
       - name: client_proposal_quote_role
-        description: "Rôle du quote dans la proposition (DEPOSIT, BALANCE, POST_STAY)."
+        description: "Rôle du quote dans la proposition (DEPOSIT, BALANCE, POST_BALANCE)."
         tests:
           - not_null
           - accepted_values:
-              values: ['DEPOSIT', 'BALANCE', 'POST_STAY']
+              values: ['DEPOSIT', 'BALANCE', 'POST_BALANCE']
 
       - name: billing_stage
         description: "Stage de facturation du quote courant."
         tests:
           - not_null
           - accepted_values:
-              values: ['DEPOSIT', 'BALANCE', 'POST_STAY']
+              values: ['DEPOSIT', 'BALANCE', 'POST_BALANCE']
 
       - name: billing_stage_rank
         description: "Ordre logique du stage de facturation."
@@ -142,13 +142,14 @@ models:
           - not_null
           - accepted_values:
               values: [1, 2, 3]
+              quote: false
 
       - name: billing_stage_label
         description: "Libellé métier du stage de facturation."
         tests:
           - not_null
           - accepted_values:
-              values: ['Deposit', 'Balance', 'Post stay']
+              values: ['Deposit', 'Balance', 'Post balance']
 
       - name: is_billing_stage_known
         description: "Indique si le stage de facturation est reconnu dans dim_billing_stage."
@@ -189,7 +190,7 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['DEPOSIT', 'BALANCE', 'POST_STAY']
+              values: ['DEPOSIT', 'BALANCE', 'POST_BALANCE']
 
       - name: current_quote_status
         description: "Statut du quote courant normalisé en majuscules."
@@ -246,7 +247,7 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['DEPOSIT', 'BALANCE', 'POST_STAY']
+              values: ['DEPOSIT', 'BALANCE', 'POST_BALANCE']
 
       - name: quote_status
         description: "Statut du quote normalisé en majuscules."
@@ -306,6 +307,7 @@ models:
           - not_null
           - accepted_values:
               values: [1, 2, 3]
+              quote: false
 
       - name: pricing_stage_label
         description: "Libellé métier du snapshot tarifaire."

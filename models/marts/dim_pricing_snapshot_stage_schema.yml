@@ -24,6 +24,7 @@ models:
           - unique
           - accepted_values:
               values: [1, 2, 3]
+              quote: false
 
       - name: pricing_stage_label
         description: "Libellé métier du snapshot tarifaire."

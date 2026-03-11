@@ -38,7 +38,7 @@ with proposal_quote_roles as (
         client_proposal_start_at,
         client_proposal_end_at,
         client_proposal_participants_count,
-        'POST_STAY' as client_proposal_quote_role,
+        'POST_BALANCE' as client_proposal_quote_role,
         balance_post_stay_quote_ids as raw_quote_ids
     from {{ ref('stg_client_proposals') }}
 

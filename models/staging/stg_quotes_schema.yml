@@ -40,11 +40,11 @@ models:
           - not_null
 
       - name: quote_payment_type
-        description: "Type de paiement du quote normalisé en majuscules (ex : DEPOSIT, BALANCE, POST_STAY)."
+        description: "Type de paiement du quote normalisé en majuscules (ex : DEPOSIT, BALANCE, POST_BALANCE)."
         tests:
           - not_null
           - accepted_values:
-              values: ['DEPOSIT', 'BALANCE', 'POST_STAY']
+              values: ['DEPOSIT', 'BALANCE', 'POST_BALANCE']
 
       - name: quote_status
         description: "Statut du quote normalisé en majuscules  (ex : WON, LOST, PENDING)."

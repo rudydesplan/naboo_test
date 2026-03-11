@@ -94,18 +94,18 @@ models:
               min_value: 0
 
       - name: client_proposal_quote_role
-        description: "Rôle du quote dans la proposition (DEPOSIT, BALANCE, POST_STAY)."
+        description: "Rôle du quote dans la proposition (DEPOSIT, BALANCE, POST_BALANCE)."
         tests:
           - not_null
           - accepted_values:
-              values: ['DEPOSIT', 'BALANCE', 'POST_STAY']
+              values: ['DEPOSIT', 'BALANCE', 'POST_BALANCE']
 
       - name: billing_stage
         description: "Stage de facturation dérivé du rôle du quote via dim_billing_stage."
         tests:
           - not_null
           - accepted_values:
-              values: ['DEPOSIT', 'BALANCE', 'POST_STAY']
+              values: ['DEPOSIT', 'BALANCE', 'POST_BALANCE']
 
       - name: billing_stage_rank
         description: "Ordre logique du stage de facturation utilisé pour ordonner les étapes de paiement."
@@ -113,13 +113,14 @@ models:
           - not_null
           - accepted_values:
               values: [1, 2, 3]
+              quote: false
 
       - name: billing_stage_label
         description: "Libellé métier du stage de facturation."
         tests:
           - not_null
           - accepted_values:
-              values: ['Deposit', 'Balance', 'Post stay']
+              values: ['Deposit', 'Balance', 'Post balance']
 
       - name: quote_id
         description: "Identifiant unique du quote."
@@ -143,11 +144,11 @@ models:
           - not_null
 
       - name: quote_payment_type
-        description: "Type de paiement du quote normalisé en majuscules (DEPOSIT, BALANCE, POST_STAY)."
+        description: "Type de paiement du quote normalisé en majuscules (DEPOSIT, BALANCE, POST_BALANCE)."
         tests:
           - not_null
           - accepted_values:
-              values: ['DEPOSIT', 'BALANCE', 'POST_STAY']
+              values: ['DEPOSIT', 'BALANCE', 'POST_BALANCE']
 
       - name: quote_status
         description: "Statut du quote normalisé en majuscules (ex : WON, LOST, PENDING)."

@@ -17,9 +17,9 @@ with stages as (
     union all
 
     select
-        'POST_STAY' as billing_stage,
+        'POST_BALANCE' as billing_stage,
         3 as billing_stage_rank,
-        'Post stay' as billing_stage_label
+        'Post balance' as billing_stage_label
 
 )
 

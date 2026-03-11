@@ -137,18 +137,18 @@ models:
               min_value: 0
 
       - name: client_proposal_quote_role
-        description: "Rôle du quote dans la proposition (DEPOSIT, BALANCE, POST_STAY)."
+        description: "Rôle du quote dans la proposition (DEPOSIT, BALANCE, POST_BALANCE)."
         tests:
           - not_null
           - accepted_values:
-              values: ['DEPOSIT', 'BALANCE', 'POST_STAY']
+              values: ['DEPOSIT', 'BALANCE', 'POST_BALANCE']
 
       - name: billing_stage
         description: "Stage de facturation du quote courant."
         tests:
           - not_null
           - accepted_values:
-              values: ['DEPOSIT', 'BALANCE', 'POST_STAY']
+              values: ['DEPOSIT', 'BALANCE', 'POST_BALANCE']
 
       - name: billing_stage_rank
         description: "Ordre logique du stage de facturation."
@@ -156,6 +156,7 @@ models:
           - not_null
           - accepted_values:
               values: [1, 2, 3]
+              quote: false
 
       - name: billing_stage_label
         description: "Libellé métier du stage de facturation."
@@ -198,7 +199,7 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['DEPOSIT', 'BALANCE', 'POST_STAY']
+              values: ['DEPOSIT', 'BALANCE', 'POST_BALANCE']
 
       - name: current_quote_status
         description: "Statut du quote courant normalisé en majuscules."
@@ -263,6 +264,7 @@ models:
           - not_null
           - accepted_values:
               values: [1, 2, 3]
+              quote: false
 
       - name: pricing_stage_count
         description: "Nombre de snapshots tarifaires distincts observés parmi les lignes agrégées."

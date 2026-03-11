@@ -91,7 +91,7 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['DEPOSIT', 'BALANCE', 'POST_STAY']
+              values: ['DEPOSIT', 'BALANCE', 'POST_BALANCE']
 
       - name: billing_stage_rank
         description: "Ordre logique du stage de facturation."
@@ -99,13 +99,14 @@ models:
           - not_null
           - accepted_values:
               values: [1, 2, 3]
+              quote: false
 
       - name: billing_stage_label
         description: "Libellé métier du stage de facturation."
         tests:
           - not_null
           - accepted_values:
-              values: ['Deposit', 'Balance', 'Post stay']
+              values: ['Deposit', 'Balance', 'Post balance']
 
       - name: client_proposal_quote_key
         description: "Clé technique du lien proposal ↔ quote issu de int_proposal_quotes."
@@ -137,11 +138,11 @@ models:
           - not_null
 
       - name: current_quote_payment_type
-        description: "Type de paiement du quote retenu normalisé en majuscules (DEPOSIT, BALANCE, POST_STAY)."
+        description: "Type de paiement du quote retenu normalisé en majuscules (DEPOSIT, BALANCE, POST_BALANCE)."
         tests:
           - not_null
           - accepted_values:
-              values: ['DEPOSIT', 'BALANCE', 'POST_STAY']
+              values: ['DEPOSIT', 'BALANCE', 'POST_BALANCE']
 
       - name: current_quote_status
         description: "Statut du quote retenu normalisé en majuscules (ex : WON, LOST, PENDING)."
