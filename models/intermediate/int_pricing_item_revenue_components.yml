@@ -162,7 +162,7 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['Deposit', 'Balance', 'Post stay']
+              values: ['Deposit', 'Balance', 'Post balance']
 
       - name: is_billing_stage_known
         description: "Indique si le stage de facturation est reconnu dans dim_billing_stage."
