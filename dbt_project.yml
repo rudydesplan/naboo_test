@@ -1,0 +1,49 @@
+name: 'naboo_project'
+version: '1.0.0'
+config-version: 2
+
+profile: 'default'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+
+models:
+
+  naboo_project:
+
+    staging:
+      +materialized: view
+      +schema: staging
+      +tags: ["staging"]
+
+    intermediate:
+      +materialized: view
+      +schema: intermediate
+      +tags: ["intermediate"]
+
+    mart:
+      +materialized: table
+      +schema: mart
+      +tags: ["mart"]
+
+
+tests:
+  +store_failures: true
+
+
+seeds:
+  +quote_columns: false
+
+
+snapshots:
+  +target_schema: snapshots
