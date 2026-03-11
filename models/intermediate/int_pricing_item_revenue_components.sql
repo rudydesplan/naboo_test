@@ -1,502 +1,277 @@
-version: 2
-
-models:
-  - name: int_pricing_item_revenue_components
-    description: >
-      Table intermédiaire enrichissant les lignes tarifaires du quote courant avec des composantes
-      de revenu calculées à la ligne. Le grain est :
-      1 ligne = 1 pricing_item du quote courant d'une proposition, enrichi avec des indicateurs
-      de revenu, de GMV, de marge et de reversement partenaire.
-
-    tests:
-      - dbt_utils.expression_is_true:
-          expression: "client_proposal_status = upper(client_proposal_status)"
-
-      - dbt_utils.expression_is_true:
-          expression: "client_proposal_quote_role = upper(client_proposal_quote_role)"
-
-      - dbt_utils.expression_is_true:
-          expression: "billing_stage = upper(billing_stage)"
-
-      - dbt_utils.expression_is_true:
-          expression: "current_quote_payment_type = upper(current_quote_payment_type)"
-
-      - dbt_utils.expression_is_true:
-          expression: "current_quote_status = upper(current_quote_status)"
-
-      - dbt_utils.expression_is_true:
-          expression: "quote_payment_type = upper(quote_payment_type)"
-
-      - dbt_utils.expression_is_true:
-          expression: "quote_status = upper(quote_status)"
-
-      - dbt_utils.expression_is_true:
-          expression: "pricing_stage = upper(pricing_stage)"
-
-      - dbt_utils.expression_is_true:
-          expression: "pricing_type = upper(pricing_type)"
-
-      - dbt_utils.expression_is_true:
-          expression: "pricing_category = upper(pricing_category)"
-
-      - dbt_utils.expression_is_true:
-          expression: "client_proposal_start_at <= client_proposal_end_at"
-
-      - dbt_utils.expression_is_true:
-          expression: "current_quote_start_at <= current_quote_end_at"
-
-      - dbt_utils.expression_is_true:
-          expression: "quote_start_at <= quote_end_at"
-
-      - dbt_utils.expression_is_true:
-          expression: "total_price_base_price_price_with_vat >= total_price_base_price_price_without_vat"
-
-      - dbt_utils.expression_is_true:
-          expression: "is_billing_stage_known in (true, false)"
-
-      - dbt_utils.expression_is_true:
-          expression: "is_pricing_stage_known in (true, false)"
-
-      - dbt_utils.expression_is_true:
-          expression: "is_service_line in (true, false)"
-
-      - dbt_utils.expression_is_true:
-          expression: "is_client_fee_line in (true, false)"
-
-      - dbt_utils.expression_is_true:
-          expression: "is_partner_commission_line in (true, false)"
-
-      - dbt_utils.expression_is_true:
-          expression: "has_quote_data_quality_issue in (true, false)"
-
-      - dbt_utils.expression_is_true:
-          expression: "has_current_quote_pricing_item_data_quality_issue in (true, false)"
-
-      - dbt_utils.expression_is_true:
-          expression: "has_revenue_component_data_quality_issue in (true, false)"
-
-    columns:
-      - name: client_proposal_quote_pricing_item_key
-        description: "Clé technique de la ligne tarifaire rattachée au quote et au snapshot tarifaire retenu."
-        tests:
-          - not_null
-          - unique
-
-      - name: quote_stage_key
-        description: "Clé technique du quote courant retenu pour la proposition."
-        tests:
-          - not_null
-          - relationships:
-              to: ref('dim_quote_stage')
-              field: quote_stage_key
-
-      - name: client_proposal_id
-        description: "Identifiant unique de la proposition commerciale."
-        tests:
-          - not_null
-          - relationships:
-              to: ref('stg_client_proposals')
-              field: client_proposal_id
-
-      - name: client_request_id
-        description: "Identifiant de la demande client associée à la proposition."
-        tests:
-          - not_null
-          - relationships:
-              to: ref('stg_client_requests')
-              field: client_request_id
-
-      - name: client_proposal_house_id
-        description: "Identifiant de la venue proposée."
-        tests:
-          - not_null
-
-      - name: client_proposal_status
-        description: "Statut de la proposition normalisé en majuscules."
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['PUBLISHED', 'BOOKING_CONFIRMED']
-
-      - name: client_proposal_start_at
-        description: "Horodatage de début du séjour proposé."
-        tests:
-          - not_null
-
-      - name: client_proposal_end_at
-        description: "Horodatage de fin du séjour proposé."
-        tests:
-          - not_null
-
-      - name: client_proposal_participants_count
-        description: "Nombre de participants prévus dans la proposition."
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-
-      - name: client_proposal_quote_role
-        description: "Rôle du quote dans la proposition (DEPOSIT, BALANCE, POST_BALANCE)."
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['DEPOSIT', 'BALANCE', 'POST_BALANCE']
-
-      - name: billing_stage
-        description: "Stage de facturation du quote courant."
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['DEPOSIT', 'BALANCE', 'POST_BALANCE']
-
-      - name: billing_stage_rank
-        description: "Ordre logique du stage de facturation."
-        tests:
-          - not_null
-          - accepted_values:
-              values: [1, 2, 3]
-              quote: false
-
-      - name: billing_stage_label
-        description: "Libellé métier du stage de facturation."
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['Deposit', 'Balance', 'Post stay']
-
-      - name: is_billing_stage_known
-        description: "Indique si le stage de facturation est reconnu dans dim_billing_stage."
-        tests:
-          - not_null
-
-      - name: client_proposal_quote_key
-        description: "Clé technique du lien entre la proposition et le quote courant."
-        tests:
-          - not_null
-          - relationships:
-              to: ref('int_proposal_quotes')
-              field: client_proposal_quote_key
-
-      - name: current_quote_id
-        description: "Identifiant du quote courant retenu pour la proposition."
-        tests:
-          - not_null
-          - relationships:
-              to: ref('stg_quotes')
-              field: quote_id
-
-      - name: current_quote_client_request_id
-        description: "Identifiant de la demande client côté quote courant."
-        tests:
-          - not_null
-          - relationships:
-              to: ref('stg_client_requests')
-              field: client_request_id
-
-      - name: current_quote_house_id
-        description: "Identifiant de la venue associée au quote courant."
-        tests:
-          - not_null
-
-      - name: current_quote_payment_type
-        description: "Type de paiement du quote courant normalisé en majuscules."
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['DEPOSIT', 'BALANCE', 'POST_BALANCE']
-
-      - name: current_quote_status
-        description: "Statut du quote courant normalisé en majuscules."
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['WON', 'LOST', 'PENDING']
-
-      - name: current_quote_deposit_rate
-        description: "Taux d'acompte du quote courant normalisé en ratio décimal."
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              max_value: 1
-
-      - name: current_quote_start_at
-        description: "Horodatage de début du séjour associé au quote courant."
-        tests:
-          - not_null
-
-      - name: current_quote_end_at
-        description: "Horodatage de fin du séjour associé au quote courant."
-        tests:
-          - not_null
-
-      - name: current_quote_created_at
-        description: "Horodatage de création du quote courant."
-        tests:
-          - not_null
-
-      - name: quote_id
-        description: "Identifiant du quote auquel la ligne tarifaire est rattachée."
-        tests:
-          - not_null
-          - relationships:
-              to: ref('stg_quotes')
-              field: quote_id
-
-      - name: quote_client_request_id
-        description: "Identifiant de la demande client côté quote."
-        tests:
-          - not_null
-          - relationships:
-              to: ref('stg_client_requests')
-              field: client_request_id
-
-      - name: quote_house_id
-        description: "Identifiant de la venue associée au quote."
-        tests:
-          - not_null
-
-      - name: quote_payment_type
-        description: "Type de paiement du quote normalisé en majuscules."
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['DEPOSIT', 'BALANCE', 'POST_BALANCE']
-
-      - name: quote_status
-        description: "Statut du quote normalisé en majuscules."
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['WON', 'LOST', 'PENDING']
-
-      - name: quote_deposit_rate
-        description: "Taux d'acompte du quote normalisé en ratio décimal."
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              max_value: 1
-
-      - name: quote_start_at
-        description: "Horodatage de début du séjour associé au quote."
-        tests:
-          - not_null
-
-      - name: quote_end_at
-        description: "Horodatage de fin du séjour associé au quote."
-        tests:
-          - not_null
-
-      - name: quote_created_at
-        description: "Horodatage de création du quote."
-        tests:
-          - not_null
-
-      - name: pricing_item_id
-        description: "Identifiant unique de la ligne tarifaire."
-        tests:
-          - not_null
-          - relationships:
-              to: ref('stg_client_pricing_items')
-              field: pricing_item_id
-
-      - name: pricing_item_source_client_proposal_id
-        description: "Valeur source de client_proposal_id portée par la ligne tarifaire, conservée à titre informatif."
-
-      - name: service_owner_id
-        description: "Identifiant du fournisseur ou du service owner."
-        tests:
-          - not_null
-
-      - name: pricing_stage
-        description: "Statut du snapshot tarifaire retenu pour la ligne tarifaire."
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['INITIAL', 'FINAL', 'POST_FINAL']
-
-      - name: pricing_stage_rank
-        description: "Ordre logique du snapshot tarifaire."
-        tests:
-          - not_null
-          - accepted_values:
-              values: [1, 2, 3]
-              quote: false
-
-      - name: pricing_stage_label
-        description: "Libellé métier du snapshot tarifaire."
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['Initial snapshot', 'Final snapshot', 'Post final snapshot']
-
-      - name: pricing_type
-        description: "Type métier de la ligne tarifaire normalisé en majuscules."
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['AD_HOC', 'USER_FEES', 'OWNER_FEES']
-
-      - name: pricing_category
-        description: "Catégorie métier de la ligne tarifaire normalisée en majuscules."
-        tests:
-          - not_null
-          - accepted_values:
-              values: ['FEES', 'ACTIVITE', 'HOUSE', 'RESTAURATION']
-
-      - name: price_option_quantity
-        description: "Quantité associée à la ligne tarifaire."
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-
-      - name: total_price_base_price_price_without_vat
-        description: "Montant HT de la ligne tarifaire."
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-
-      - name: total_price_base_price_price_with_vat
-        description: "Montant TTC de la ligne tarifaire."
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-
-      - name: price_option_user_fees_rate
-        description: "Taux de frais utilisateur converti en ratio décimal."
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              max_value: 1
-
-      - name: price_option_owner_fees_rate
-        description: "Taux de commission propriétaire converti en ratio décimal."
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              max_value: 1
-
-      - name: price_option_discount_rate
-        description: "Taux de remise converti en ratio décimal."
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              max_value: 1
-
-      - name: is_service_line
-        description: "Indique si la ligne tarifaire correspond à une prestation de service (AD_HOC)."
-        tests:
-          - not_null
-
-      - name: is_client_fee_line
-        description: "Indique si la ligne tarifaire correspond à des frais client (USER_FEES)."
-        tests:
-          - not_null
-
-      - name: is_partner_commission_line
-        description: "Indique si la ligne tarifaire correspond à une commission partenaire (OWNER_FEES)."
-        tests:
-          - not_null
-
-      - name: service_gross_amount
-        description: "Montant TTC brut de prestation, calculé uniquement pour les lignes AD_HOC."
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-
-      - name: discount_amount
-        description: "Montant de remise appliqué sur la prestation, calculé uniquement pour les lignes AD_HOC."
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-
-      - name: service_net_amount
-        description: "Montant TTC net de prestation après remise, calculé uniquement pour les lignes AD_HOC."
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-
-      - name: client_fee_amount
-        description: "Montant TTC des frais client, calculé uniquement pour les lignes USER_FEES."
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-
-      - name: partner_commission_amount
-        description: "Montant TTC de la commission partenaire, calculé uniquement pour les lignes OWNER_FEES."
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-
-      - name: total_margin_amount
-        description: "Montant total de marge porté par les lignes de frais et de commission (USER_FEES et OWNER_FEES)."
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-
-      - name: gmv_service_net_amount
-        description: "GMV net de service après remise, calculé uniquement sur les lignes AD_HOC."
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-
-      - name: gmv_with_client_fees_amount
-        description: "GMV incluant le net de service après remise et les frais client."
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-
-      - name: net_supplier_payout_amount
-        description: "Montant net théorique revenant au fournisseur : net de service diminué des commissions partenaire."
-        tests:
-          - not_null
-
-      - name: is_quote_role_consistent
-        description: "Indique si le rôle du quote correspond au type de paiement du quote."
-        tests:
-          - not_null
-
-      - name: is_request_consistent
-        description: "Indique si client_request_id côté proposition et quote correspondent."
-        tests:
-          - not_null
-
-      - name: is_house_consistent
-        description: "Indique si house_id côté proposition et quote correspondent."
-        tests:
-          - not_null
-
-      - name: is_source_client_proposal_id_consistent
-        description: "Indique si le client_proposal_id porté par la ligne tarifaire est cohérent avec la proposition reconstruite via le quote, ou absent."
-        tests:
-          - not_null
-
-      - name: has_quote_data_quality_issue
-        description: "Indique si une incohérence est détectée dans les données du quote courant."
-        tests:
-          - not_null
-
-      - name: is_pricing_stage_known
-        description: "Indique si le snapshot tarifaire est reconnu dans dim_pricing_snapshot_stage."
-        tests:
-          - not_null
-
-      - name: has_current_quote_pricing_item_data_quality_issue
-        description: "Indique si une incohérence est détectée dans les données de la ligne tarifaire courante."
-        tests:
-          - not_null
-
-      - name: has_revenue_component_data_quality_issue
-        description: "Indique si une incohérence est détectée dans les composantes de revenu calculées ou dans leurs prérequis de qualité."
-        tests:
-          - not_null
+{{ config(materialized='view') }}
+
+with current_quote_pricing_items as (
+
+    select
+        client_proposal_quote_pricing_item_key,
+        quote_stage_key,
+
+        client_proposal_id,
+        client_request_id,
+        client_proposal_house_id,
+        client_proposal_status,
+        client_proposal_start_at,
+        client_proposal_end_at,
+        client_proposal_participants_count,
+
+        client_proposal_quote_role,
+        billing_stage,
+        billing_stage_rank,
+        billing_stage_label,
+        is_billing_stage_known,
+
+        client_proposal_quote_key,
+        current_quote_id,
+        current_quote_client_request_id,
+        current_quote_house_id,
+        current_quote_payment_type,
+        current_quote_status,
+        current_quote_deposit_rate,
+        current_quote_start_at,
+        current_quote_end_at,
+        current_quote_created_at,
+
+        quote_id,
+        quote_client_request_id,
+        quote_house_id,
+        quote_payment_type,
+        quote_status,
+        quote_deposit_rate,
+        quote_start_at,
+        quote_end_at,
+        quote_created_at,
+
+        pricing_item_id,
+        pricing_item_source_client_proposal_id,
+        service_owner_id,
+        pricing_stage,
+        pricing_stage_rank,
+        pricing_stage_label,
+        pricing_type,
+        pricing_category,
+        price_option_quantity,
+		
+		is_quote_role_consistent,
+        is_request_consistent,
+        is_house_consistent,
+        is_source_client_proposal_id_consistent,
+        has_quote_data_quality_issue,
+        is_pricing_stage_known,
+        has_current_quote_pricing_item_data_quality_issue,
+
+        cast(coalesce(total_price_base_price_price_without_vat, 0) as numeric) as total_price_base_price_price_without_vat,
+        cast(coalesce(total_price_base_price_price_with_vat, 0) as numeric) as total_price_base_price_price_with_vat,
+        cast(coalesce(price_option_user_fees_rate, 0) as numeric) as price_option_user_fees_rate,
+        cast(coalesce(price_option_owner_fees_rate, 0) as numeric) as price_option_owner_fees_rate,
+        cast(coalesce(price_option_discount_rate, 0) as numeric) as price_option_discount_rate,
+
+        is_quote_role_consistent,
+        is_request_consistent,
+        is_house_consistent,
+        is_source_client_proposal_id_consistent,
+        has_quote_data_quality_issue,
+        is_pricing_stage_known,
+        has_current_quote_pricing_item_data_quality_issue
+    from {{ ref('int_current_quote_pricing_items') }}
+
+),
+
+components as (
+
+    select
+        client_proposal_quote_pricing_item_key,
+        quote_stage_key,
+
+        client_proposal_id,
+        client_request_id,
+        client_proposal_house_id,
+        client_proposal_status,
+        client_proposal_start_at,
+        client_proposal_end_at,
+        client_proposal_participants_count,
+
+        client_proposal_quote_role,
+        billing_stage,
+        billing_stage_rank,
+        billing_stage_label,
+        is_billing_stage_known,
+
+        client_proposal_quote_key,
+        current_quote_id,
+        current_quote_client_request_id,
+        current_quote_house_id,
+        current_quote_payment_type,
+        current_quote_status,
+        current_quote_deposit_rate,
+        current_quote_start_at,
+        current_quote_end_at,
+        current_quote_created_at,
+
+        quote_id,
+        quote_client_request_id,
+        quote_house_id,
+        quote_payment_type,
+        quote_status,
+        quote_deposit_rate,
+        quote_start_at,
+        quote_end_at,
+        quote_created_at,
+
+        pricing_item_id,
+        pricing_item_source_client_proposal_id,
+        service_owner_id,
+        pricing_stage,
+        pricing_stage_rank,
+        pricing_stage_label,
+        pricing_type,
+        pricing_category,
+        price_option_quantity,
+        total_price_base_price_price_without_vat,
+        total_price_base_price_price_with_vat,
+        price_option_user_fees_rate,
+        price_option_owner_fees_rate,
+        price_option_discount_rate,
+
+        pricing_type = 'AD_HOC' as is_service_line,
+        pricing_type = 'USER_FEES' as is_client_fee_line,
+        pricing_type = 'OWNER_FEES' as is_partner_commission_line,
+
+        case
+            when pricing_type = 'AD_HOC' then total_price_base_price_price_with_vat
+            else cast(0 as numeric)
+        end as service_gross_amount,
+
+        case
+            when pricing_type = 'AD_HOC' then total_price_base_price_price_with_vat * price_option_discount_rate
+            else cast(0 as numeric)
+        end as discount_amount,
+
+        case
+            when pricing_type = 'AD_HOC' then total_price_base_price_price_with_vat - (total_price_base_price_price_with_vat * price_option_discount_rate)
+            else cast(0 as numeric)
+        end as service_net_amount,
+
+        case
+            when pricing_type = 'USER_FEES' then total_price_base_price_price_with_vat
+            else cast(0 as numeric)
+        end as client_fee_amount,
+
+        case
+            when pricing_type = 'OWNER_FEES' then total_price_base_price_price_with_vat
+            else cast(0 as numeric)
+        end as partner_commission_amount,
+
+        case
+            when pricing_type in ('USER_FEES', 'OWNER_FEES') then total_price_base_price_price_with_vat
+            else cast(0 as numeric)
+        end as total_margin_amount,
+
+        case
+            when pricing_type = 'AD_HOC' then total_price_base_price_price_with_vat - (total_price_base_price_price_with_vat * price_option_discount_rate)
+            else cast(0 as numeric)
+        end as gmv_service_net_amount,
+
+        case
+            when pricing_type = 'AD_HOC' then total_price_base_price_price_with_vat - (total_price_base_price_price_with_vat * price_option_discount_rate)
+            when pricing_type = 'USER_FEES' then total_price_base_price_price_with_vat
+            else cast(0 as numeric)
+        end as gmv_with_client_fees_amount,
+
+        case
+            when pricing_type = 'AD_HOC' then total_price_base_price_price_with_vat - (total_price_base_price_price_with_vat * price_option_discount_rate)
+            when pricing_type = 'OWNER_FEES' then -total_price_base_price_price_with_vat
+            else cast(0 as numeric)
+        end as net_supplier_payout_amount,
+
+        not (
+            is_quote_role_consistent
+            and is_request_consistent
+            and is_house_consistent
+            and is_source_client_proposal_id_consistent
+            and is_billing_stage_known
+            and is_pricing_stage_known
+            and not has_quote_data_quality_issue
+            and not has_current_quote_pricing_item_data_quality_issue
+        ) as has_revenue_component_data_quality_issue
+
+    from current_quote_pricing_items
+
+)
+
+select
+    client_proposal_quote_pricing_item_key,
+    quote_stage_key,
+
+    client_proposal_id,
+    client_request_id,
+    client_proposal_house_id,
+    client_proposal_status,
+    client_proposal_start_at,
+    client_proposal_end_at,
+    client_proposal_participants_count,
+
+    client_proposal_quote_role,
+    billing_stage,
+    billing_stage_rank,
+    billing_stage_label,
+    is_billing_stage_known,
+
+    client_proposal_quote_key,
+    current_quote_id,
+    current_quote_client_request_id,
+    current_quote_house_id,
+    current_quote_payment_type,
+    current_quote_status,
+    current_quote_deposit_rate,
+    current_quote_start_at,
+    current_quote_end_at,
+    current_quote_created_at,
+
+    quote_id,
+    quote_client_request_id,
+    quote_house_id,
+    quote_payment_type,
+    quote_status,
+    quote_deposit_rate,
+    quote_start_at,
+    quote_end_at,
+    quote_created_at,
+
+    pricing_item_id,
+    pricing_item_source_client_proposal_id,
+    service_owner_id,
+    pricing_stage,
+    pricing_stage_rank,
+    pricing_stage_label,
+    pricing_type,
+    pricing_category,
+    price_option_quantity,
+    total_price_base_price_price_without_vat,
+    total_price_base_price_price_with_vat,
+    price_option_user_fees_rate,
+    price_option_owner_fees_rate,
+    price_option_discount_rate,
+
+    is_service_line,
+    is_client_fee_line,
+    is_partner_commission_line,
+    service_gross_amount,
+    discount_amount,
+    service_net_amount,
+    client_fee_amount,
+    partner_commission_amount,
+    total_margin_amount,
+    gmv_service_net_amount,
+    gmv_with_client_fees_amount,
+    net_supplier_payout_amount,
+
+    is_quote_role_consistent,
+    is_request_consistent,
+    is_house_consistent,
+    is_source_client_proposal_id_consistent,
+    has_quote_data_quality_issue,
+    is_pricing_stage_known,
+    has_current_quote_pricing_item_data_quality_issue,
+    has_revenue_component_data_quality_issue
+
+from components
