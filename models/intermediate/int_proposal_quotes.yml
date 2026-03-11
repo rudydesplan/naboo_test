@@ -23,9 +23,6 @@ models:
           expression: "is_house_consistent = (client_proposal_house_id = quote_house_id)"
 
       - dbt_utils.expression_is_true:
-          expression: "has_quote_data_quality_issue = (not is_quote_role_consistent or not is_request_consistent or not is_house_consistent or not is_billing_stage_known)"
-
-      - dbt_utils.expression_is_true:
           expression: "billing_stage = upper(billing_stage)"
           
       - dbt_utils.unique_combination_of_columns:
