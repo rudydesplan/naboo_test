@@ -61,6 +61,47 @@ models:
       - dbt_utils.expression_is_true:
           expression: "has_data_quality_issue in (true, false)"
 
+      - dbt_utils.expression_is_true:
+          expression: "gmv_with_client_fees >= gmv_service_net"
+
+      - dbt_utils.expression_is_true:
+          expression: "total_margin = naboo_client_fees + naboo_partner_commission"
+
+      - dbt_utils.expression_is_true:
+          expression: "supplier_net_payout = gmv_service_net - naboo_partner_commission"
+
+      - dbt_utils.expression_is_true:
+          expression: "gmv_service_net >= 0"
+
+      - dbt_utils.expression_is_true:
+          expression: "total_margin >= 0"
+
+      - dbt_utils.expression_is_true:
+          expression: "pricing_item_count >= service_line_count"
+
+      - dbt_utils.expression_is_true:
+          expression: "pricing_item_count >= client_fee_line_count"
+
+      - dbt_utils.expression_is_true:
+          expression: "pricing_item_count >= partner_commission_line_count"
+
+      - dbt_utils.expression_is_true:
+          expression: "pricing_item_count >= service_line_count + client_fee_line_count + partner_commission_line_count"
+
+      - dbt_utils.expression_is_true:
+          expression: "client_proposal_quote_role = billing_stage"
+
+      - dbt_utils.expression_is_true:
+          expression: "billing_stage = current_quote_payment_type"
+
+      - dbt_utils.expression_is_true:
+          expression: "has_data_quality_issue = (not is_quote_data_quality_valid or not is_current_quote_pricing_item_data_quality_valid or not is_revenue_component_data_quality_valid)"
+
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - client_proposal_id
+            - service_owner_id
+
     columns:
       - name: event_revenue_key
         description: "Clé technique de la table de faits, calculée au grain proposition × service owner."
@@ -106,11 +147,13 @@ models:
         description: "Identifiant de la venue proposée."
         tests:
           - not_null
+          - dbt_utils.not_empty_string
 
       - name: service_owner_id
         description: "Identifiant du fournisseur ou du service owner."
         tests:
           - not_null
+          - dbt_utils.not_empty_string
 
       - name: client_proposal_status
         description: "Statut de la proposition normalisé en majuscules."
