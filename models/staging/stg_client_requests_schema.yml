@@ -8,10 +8,19 @@ models:
       - dbt_utils.expression_is_true:
           expression: "client_request_status = upper(client_request_status)"
           
+      - dbt_utils.expression_is_true:
+           expression: "client_request_key = {{ dbt_utils.generate_surrogate_key(['client_request_id']) }}"
+          
       - dbt_utils.recency:
           field: client_request_created_at
           datepart: year
           interval: 5
+       
+      - dbt_utils.expression_is_true:
+          expression: "_loaded_at >= client_request_created_at"
+          
+      - dbt_utils.expression_is_true:
+          expression: "client_request_company_name = trim(client_request_company_name)"
 
     columns:
       - name: client_request_key
