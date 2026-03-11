@@ -2,8 +2,8 @@ version: 2
 
 sources:
   - name: naboo_test
-    database: naboo-app-365515
-    schema: naboo_test
+    database: naboo-dbt-rudy
+    schema: naboo_test_rudy
 
     tables:
       - name: client_requests
