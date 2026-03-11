@@ -51,14 +51,6 @@ with current_quote_pricing_items as (
         pricing_category,
         price_option_quantity,
 		
-		is_quote_role_consistent,
-        is_request_consistent,
-        is_house_consistent,
-        is_source_client_proposal_id_consistent,
-        has_quote_data_quality_issue,
-        is_pricing_stage_known,
-        has_current_quote_pricing_item_data_quality_issue,
-
         cast(coalesce(total_price_base_price_price_without_vat, 0) as numeric) as total_price_base_price_price_without_vat,
         cast(coalesce(total_price_base_price_price_with_vat, 0) as numeric) as total_price_base_price_price_with_vat,
         cast(coalesce(price_option_user_fees_rate, 0) as numeric) as price_option_user_fees_rate,
@@ -182,6 +174,14 @@ components as (
             when pricing_type = 'OWNER_FEES' then -total_price_base_price_price_with_vat
             else cast(0 as numeric)
         end as net_supplier_payout_amount,
+		
+		is_quote_role_consistent,
+        is_request_consistent,
+        is_house_consistent,
+        is_source_client_proposal_id_consistent,
+        has_quote_data_quality_issue,
+        is_pricing_stage_known,
+        has_current_quote_pricing_item_data_quality_issue,
 
         not (
             is_quote_role_consistent
