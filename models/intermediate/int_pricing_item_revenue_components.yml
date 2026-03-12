@@ -152,6 +152,9 @@ models:
       - dbt_utils.expression_is_true:
           expression: "pricing_type != 'OWNER_FEES' or client_fee_amount = 0"
 
+      - dbt_utils.expression_is_true:
+          expression: "current_quote_payment_type = billing_stage"
+
     columns:
       - name: client_proposal_quote_pricing_item_key
         description: "Clé technique de la ligne tarifaire rattachée au quote et au snapshot tarifaire retenu."

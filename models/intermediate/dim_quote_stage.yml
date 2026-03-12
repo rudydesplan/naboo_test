@@ -35,10 +35,21 @@ models:
       - dbt_utils.expression_is_true:
           expression: "has_quote_data_quality_issue = (not is_quote_role_consistent or not is_request_consistent or not is_house_consistent or not is_billing_stage_known)"
 
+      - dbt_utils.expression_is_true:
+          expression: "billing_stage = current_quote_payment_type"
+
+      - dbt_utils.expression_is_true:
+          expression: "client_proposal_quote_role = billing_stage"
+
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - client_proposal_id
+            - billing_stage
+  
     columns:
 
       - name: quote_stage_key
-        description: "Clé technique générée à partir de client_proposal_id."
+        description: "Clé technique générée à partir de (client_proposal_id, billing_stage)."
         tests:
           - not_null
           - unique
@@ -47,7 +58,6 @@ models:
         description: "Identifiant unique de la proposition commerciale."
         tests:
           - not_null
-          - unique
           - relationships:
               to: ref('stg_client_proposals')
               field: client_proposal_id

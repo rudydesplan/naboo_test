@@ -25,6 +25,9 @@ models:
       - dbt_utils.expression_is_true:
           expression: "billing_stage = upper(billing_stage)"
           
+      - dbt_utils.expression_is_true:
+          expression: "client_proposal_quote_role = quote_payment_type"          
+          
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - client_proposal_id
