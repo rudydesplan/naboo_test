@@ -134,8 +134,7 @@ models:
 
       - dbt_utils.expression_is_true:
           expression: "
-            gmv_service_net + total_discount =
-            sum_service_gross_reference
+            gmv_service_net + total_discount = service_gross_amount
           "
 
       - dbt_utils.expression_is_true:
