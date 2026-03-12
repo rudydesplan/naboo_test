@@ -28,7 +28,7 @@ with proposal_quotes as (
         is_request_consistent,
         is_house_consistent,
         is_billing_stage_known
-    from {{ ref('int_proposal_quotes') }}
+    from {{ ref('int_proposal_quotes_valid') }}
 
 ),
 

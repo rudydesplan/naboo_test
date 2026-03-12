@@ -27,7 +27,7 @@ with proposal_quotes as (
         is_request_consistent,
         is_house_consistent
 
-    from {{ ref('int_proposal_quotes') }}
+    from {{ ref('int_proposal_quotes_valid') }}
 
 ),
 
@@ -110,9 +110,10 @@ ranked as (
         is_house_consistent,
 
         row_number() over (
-            partition by client_proposal_id
+            partition by client_proposal_id, client_proposal_quote_role
             order by
-                coalesce(billing_stage_rank, 0) desc,
+                case when is_quote_role_consistent then 0 else 1 end,
+				case when quote_status = 'WON' then 0 else 1 end,
                 quote_created_at desc,
                 quote_id desc
         ) as quote_stage_order
@@ -125,7 +126,7 @@ final as (
 
     select
 
-        {{ dbt_utils.generate_surrogate_key(['client_proposal_id']) }} as quote_stage_key,
+        {{ dbt_utils.generate_surrogate_key(['client_proposal_id','client_proposal_quote_role']) }} as quote_stage_key,
 
         client_proposal_id ,
         client_request_id ,
