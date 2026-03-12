@@ -33,6 +33,13 @@ models:
       - dbt_utils.expression_is_true:
           expression: "quote_start_at <= quote_end_at"
 
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - client_proposal_quote_key
+            - pricing_item_id
+            - pricing_deposit_status
+
+
     columns:
       - name: client_proposal_quote_pricing_item_key
         description: "Clé technique générée à partir de (client_proposal_quote_key, pricing_item_id, pricing_deposit_status)."

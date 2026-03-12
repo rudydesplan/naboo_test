@@ -10,6 +10,9 @@ models:
 
       - dbt_utils.expression_is_true:
           expression: "client_proposal_start_at <= client_proposal_end_at"
+          
+      - dbt_utils.expression_is_true:
+          expression: "deposit_quote_ids is null or client_proposal_deposit_rate between 0 and 1"
 
     columns:
       - name: client_proposal_id
@@ -30,6 +33,7 @@ models:
         description: "Identifiant de la venue proposée."
         tests:
           - not_null
+          - dbt_utils.not_empty_string
 
       - name: client_proposal_status
         description: "Statut de la proposition normalisé en majuscules."

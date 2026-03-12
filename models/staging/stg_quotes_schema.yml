@@ -10,6 +10,12 @@ models:
 
       - dbt_utils.expression_is_true:
           expression: "quote_payment_type = upper(quote_payment_type)"
+          
+      - dbt_utils.expression_is_true:
+          expression: "quote_status = trim(quote_status)"
+          
+      - dbt_utils.expression_is_true:
+          expression: "quote_payment_type = trim(quote_payment_type)"
 
       - dbt_utils.expression_is_true:
           expression: "quote_start_at <= quote_end_at"
@@ -30,6 +36,7 @@ models:
         description: "Identifiant de la demande client associée au quote."
         tests:
           - not_null
+          - dbt_utils.not_empty_string
           - relationships:
               to: ref('stg_client_requests')
               field: client_request_id
@@ -38,6 +45,7 @@ models:
         description: "Identifiant de la venue associée au quote."
         tests:
           - not_null
+          - dbt_utils.not_empty_string
 
       - name: quote_payment_type
         description: "Type de paiement du quote normalisé en majuscules (ex : DEPOSIT, BALANCE, POST_BALANCE)."

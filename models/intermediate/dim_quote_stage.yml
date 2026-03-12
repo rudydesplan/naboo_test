@@ -31,11 +31,25 @@ models:
 
       - dbt_utils.expression_is_true:
           expression: "has_quote_data_quality_issue in (true, false)"
+          
+      - dbt_utils.expression_is_true:
+          expression: "has_quote_data_quality_issue = (not is_quote_role_consistent or not is_request_consistent or not is_house_consistent or not is_billing_stage_known)"
 
+      - dbt_utils.expression_is_true:
+          expression: "billing_stage = current_quote_payment_type"
+
+      - dbt_utils.expression_is_true:
+          expression: "client_proposal_quote_role = billing_stage"
+
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - client_proposal_id
+            - billing_stage
+  
     columns:
 
       - name: quote_stage_key
-        description: "Clé technique générée à partir de client_proposal_id."
+        description: "Clé technique générée à partir de (client_proposal_id, billing_stage)."
         tests:
           - not_null
           - unique
@@ -44,7 +58,6 @@ models:
         description: "Identifiant unique de la proposition commerciale."
         tests:
           - not_null
-          - unique
           - relationships:
               to: ref('stg_client_proposals')
               field: client_proposal_id
@@ -61,6 +74,7 @@ models:
         description: "Identifiant de la venue proposée."
         tests:
           - not_null
+          - dbt_utils.not_empty_string
 
       - name: client_proposal_status
         description: "Statut de la proposition normalisé en majuscules."
@@ -120,6 +134,7 @@ models:
         description: "Identifiant du quote retenu comme stage courant de la proposition."
         tests:
           - not_null
+          - dbt_utils.not_empty_string
           - relationships:
               to: ref('stg_quotes')
               field: quote_id
@@ -136,6 +151,7 @@ models:
         description: "Identifiant de la venue associée au quote."
         tests:
           - not_null
+          - dbt_utils.not_empty_string
 
       - name: current_quote_payment_type
         description: "Type de paiement du quote retenu normalisé en majuscules (DEPOSIT, BALANCE, POST_BALANCE)."
@@ -198,5 +214,4 @@ models:
           Indique si une incohérence est détectée dans les données du quote
           (incohérence de request, house, payment type ou stage inconnu).
         tests:
-
           - not_null

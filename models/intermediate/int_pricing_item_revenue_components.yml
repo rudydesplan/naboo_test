@@ -35,6 +35,15 @@ models:
 
       - dbt_utils.expression_is_true:
           expression: "pricing_type = upper(pricing_type)"
+          
+      - dbt_utils.expression_is_true:
+          expression: "pricing_type != 'AD_HOC' or is_service_line = true"
+        
+      - dbt_utils.expression_is_true:
+          expression: "pricing_type != 'USER_FEES' or is_client_fee_line = true"
+
+      - dbt_utils.expression_is_true:
+          expression: "pricing_type != 'OWNER_FEES' or is_partner_commission_line = true"
 
       - dbt_utils.expression_is_true:
           expression: "pricing_category = upper(pricing_category)"
@@ -74,6 +83,77 @@ models:
 
       - dbt_utils.expression_is_true:
           expression: "has_revenue_component_data_quality_issue in (true, false)"
+
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - client_proposal_quote_key
+            - pricing_item_id
+
+      - dbt_utils.expression_is_true:
+          expression: "service_net_amount = service_gross_amount - discount_amount"
+
+      - dbt_utils.expression_is_true:
+          expression: "gmv_service_net_amount = service_net_amount"
+
+      - dbt_utils.expression_is_true:
+          expression: "total_margin_amount = client_fee_amount + partner_commission_amount"
+
+      - dbt_utils.expression_is_true:
+          expression: "gmv_with_client_fees_amount = gmv_service_net_amount + client_fee_amount"
+
+      - dbt_utils.expression_is_true:
+          expression: "net_supplier_payout_amount = service_net_amount - partner_commission_amount"
+
+      - dbt_utils.expression_is_true:
+          expression: "discount_amount <= service_gross_amount"
+
+      - dbt_utils.expression_is_true:
+          expression: "gmv_with_client_fees_amount >= gmv_service_net_amount"
+
+      - dbt_utils.expression_is_true:
+          expression: "service_gross_amount >= service_net_amount"
+
+      - dbt_utils.expression_is_true:
+          expression: "total_margin_amount >= client_fee_amount"
+
+      - dbt_utils.expression_is_true:
+          expression: "service_net_amount >= 0"
+
+      - dbt_utils.expression_is_true:
+          expression: "client_fee_amount >= 0"
+
+      - dbt_utils.expression_is_true:
+          expression: "partner_commission_amount >= 0"
+
+      - dbt_utils.expression_is_true:
+          expression: "total_margin_amount >= 0"
+
+      - dbt_utils.expression_is_true:
+          expression: "pricing_type != 'AD_HOC' or client_fee_amount = 0"
+
+      - dbt_utils.expression_is_true:
+          expression: "pricing_type != 'AD_HOC' or partner_commission_amount = 0"
+
+      - dbt_utils.expression_is_true:
+          expression: "pricing_type != 'USER_FEES' or service_gross_amount = 0"
+
+      - dbt_utils.expression_is_true:
+          expression: "pricing_type != 'USER_FEES' or discount_amount = 0"
+
+      - dbt_utils.expression_is_true:
+          expression: "pricing_type != 'USER_FEES' or service_net_amount = 0"
+
+      - dbt_utils.expression_is_true:
+          expression: "pricing_type != 'OWNER_FEES' or service_gross_amount = 0"
+
+      - dbt_utils.expression_is_true:
+          expression: "pricing_type != 'OWNER_FEES' or discount_amount = 0"
+
+      - dbt_utils.expression_is_true:
+          expression: "pricing_type != 'OWNER_FEES' or client_fee_amount = 0"
+
+      - dbt_utils.expression_is_true:
+          expression: "current_quote_payment_type = billing_stage"
 
     columns:
       - name: client_proposal_quote_pricing_item_key

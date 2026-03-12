@@ -12,9 +12,24 @@ models:
     tests:
       - dbt_utils.expression_is_true:
           expression: "client_proposal_quote_role = upper(client_proposal_quote_role)"
+          
+      - dbt_utils.expression_is_true:
+          expression: "is_quote_role_consistent = (client_proposal_quote_role = quote_payment_type)"
+
+      - dbt_utils.expression_is_true:
+          expression: "is_request_consistent = (client_request_id = quote_client_request_id)"
+
+      - dbt_utils.expression_is_true:
+          expression: "is_house_consistent = (client_proposal_house_id = quote_house_id)"
 
       - dbt_utils.expression_is_true:
           expression: "billing_stage = upper(billing_stage)"
+          
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - client_proposal_id
+            - client_proposal_quote_role
+            - quote_id
 
     columns:
 
@@ -121,5 +136,4 @@ models:
         description: "Indique si house_id côté proposition et quote correspondent."
 
       - name: is_billing_stage_known
-
         description: "Indique si le stage de facturation est reconnu dans dim_billing_stage."
