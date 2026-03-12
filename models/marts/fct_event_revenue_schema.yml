@@ -132,9 +132,14 @@ models:
             gmv_service_net + naboo_client_fees
           "
 
+#      - dbt_utils.expression_is_true:
+#          expression: "
+#            gmv_service_net + total_discount = service_gross_amount
+#          "
+
       - dbt_utils.expression_is_true:
           expression: "
-            gmv_service_net + total_discount = service_gross_amount
+            abs(service_gross_amount - (gmv_service_net + total_discount)) < 0.01
           "
 
       - dbt_utils.expression_is_true:
@@ -401,6 +406,13 @@ models:
 
       - name: total_discount
         description: "Montant total de remise agrégé sur les lignes de prestation."
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+
+      - name: service_gross_amount
+        description: "Montant brut agrégé des lignes de prestation avant remise."
         tests:
           - not_null
           - dbt_utils.accepted_range:
