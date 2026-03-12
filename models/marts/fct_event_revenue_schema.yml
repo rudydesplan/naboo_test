@@ -104,17 +104,39 @@ models:
           combination_of_columns:
             - quote_stage_key
             - service_owner_id
-            
+                
       - dbt_utils.expression_is_true:
-          expression: "pricing_stage_count = 1"
-    
-      - dbt_utils.expression_is_true:
-          expression: >
+          expression: "
             gmv_with_client_fees =
             supplier_net_payout
             + naboo_client_fees
             + naboo_partner_commission
-            + total_discount
+          "
+        
+      - dbt_utils.expression_is_true:
+          expression: "
+            total_margin =
+            naboo_client_fees
+            + naboo_partner_commission
+          "
+
+      - dbt_utils.expression_is_true:
+          expression: "
+            supplier_net_payout =
+            gmv_service_net - naboo_partner_commission
+          "    
+
+      - dbt_utils.expression_is_true:
+          expression: "
+            gmv_with_client_fees =
+            gmv_service_net + naboo_client_fees
+          "
+
+      - dbt_utils.expression_is_true:
+          expression: "
+            gmv_service_net + total_discount =
+            sum_service_gross_reference
+          "
 
       - dbt_utils.expression_is_true:
           expression: "billing_stage_rank = case billing_stage
