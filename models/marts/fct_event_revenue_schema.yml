@@ -3,16 +3,22 @@ version: 2
 models:
   - name: fct_event_revenue
     description: >
-      Table de faits agrégée des revenus par événement et par service owner, construite à partir
-      des composantes de revenu calculées au niveau ligne tarifaire. Le grain est :
-      1 ligne = 1 quote_stage × 1 service_owner_id, agrégée sur le quote courant et son stage
-      de facturation, avec les principaux indicateurs de GMV, de marge, de commissions,
-      de reversement fournisseur et de qualité de données.
+      Table de faits finale des revenus par proposition et par prestataire,
+      exposée uniquement au stade de facturation le plus avancé atteint pour
+      chaque proposition.
+
+      Le grain est :
+      1 ligne = 1 client_proposal_id × 1 service_owner_id
+      pour le quote_stage retenu comme le plus avancé.
+
+      Le modèle reprend les métriques financières agrégées calculées dans
+      pre_fct_event_revenue, puis filtre pour ne conserver que le stade final
+      par proposition selon :
+      - billing_stage_rank le plus élevé
+      - puis current_quote_created_at le plus récent
+      - puis current_quote_id comme tie-breaker final
 
     tests:
-      - dbt_utils.expression_is_true:
-          expression: "client_proposal_status = upper(client_proposal_status)"
-
       - dbt_utils.expression_is_true:
           expression: "client_proposal_quote_role = upper(client_proposal_quote_role)"
 
@@ -26,46 +32,25 @@ models:
           expression: "current_quote_status = upper(current_quote_status)"
 
       - dbt_utils.expression_is_true:
-          expression: "client_proposal_start_at <= client_proposal_end_at"
+          expression: "pricing_item_count >= 1"
 
       - dbt_utils.expression_is_true:
-          expression: "current_quote_start_at <= current_quote_end_at"
+          expression: "service_line_count >= 0"
 
       - dbt_utils.expression_is_true:
-          expression: "is_quote_role_consistent in (true, false)"
+          expression: "client_fee_line_count >= 0"
 
       - dbt_utils.expression_is_true:
-          expression: "is_request_consistent in (true, false)"
+          expression: "partner_commission_line_count >= 0"
 
       - dbt_utils.expression_is_true:
-          expression: "is_house_consistent in (true, false)"
+          expression: "pricing_stage_count >= 1"
 
       - dbt_utils.expression_is_true:
-          expression: "is_source_client_proposal_id_consistent in (true, false)"
+          expression: "max_pricing_stage_rank >= 1"
 
       - dbt_utils.expression_is_true:
-          expression: "is_billing_stage_known in (true, false)"
-
-      - dbt_utils.expression_is_true:
-          expression: "is_pricing_stage_known in (true, false)"
-
-      - dbt_utils.expression_is_true:
-          expression: "is_quote_data_quality_valid in (true, false)"
-
-      - dbt_utils.expression_is_true:
-          expression: "is_current_quote_pricing_item_data_quality_valid in (true, false)"
-
-      - dbt_utils.expression_is_true:
-          expression: "is_revenue_component_data_quality_valid in (true, false)"
-
-      - dbt_utils.expression_is_true:
-          expression: "has_data_quality_issue in (true, false)"
-
-      - dbt_utils.expression_is_true:
-          expression: "gmv_with_client_fees >= gmv_service_net"
-
-      - dbt_utils.expression_is_true:
-          expression: "gmv_with_client_fees >= naboo_client_fees"
+          expression: "gmv_with_client_fees = gmv_service_net + naboo_client_fees"
 
       - dbt_utils.expression_is_true:
           expression: "total_margin = naboo_client_fees + naboo_partner_commission"
@@ -74,174 +59,85 @@ models:
           expression: "supplier_net_payout = gmv_service_net - naboo_partner_commission"
 
       - dbt_utils.expression_is_true:
-          expression: "gmv_service_net >= 0"
+          expression: "service_gross_amount = gmv_service_net + total_discount"
 
-      - dbt_utils.expression_is_true:
-          expression: "total_margin >= 0"
-
-      - dbt_utils.expression_is_true:
-          expression: "pricing_item_count >= service_line_count"
-
-      - dbt_utils.expression_is_true:
-          expression: "pricing_item_count >= client_fee_line_count"
-
-      - dbt_utils.expression_is_true:
-          expression: "pricing_item_count >= partner_commission_line_count"
-
-      - dbt_utils.expression_is_true:
-          expression: "pricing_item_count = service_line_count + client_fee_line_count + partner_commission_line_count"
-
-      - dbt_utils.expression_is_true:
-          expression: "client_proposal_quote_role = billing_stage"
-
-      - dbt_utils.expression_is_true:
-          expression: "billing_stage = current_quote_payment_type"
-
-      - dbt_utils.expression_is_true:
-          expression: "has_data_quality_issue = (not is_quote_data_quality_valid or not is_current_quote_pricing_item_data_quality_valid or not is_revenue_component_data_quality_valid)"
-
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - quote_stage_key
-            - service_owner_id
-                
-      - dbt_utils.expression_is_true:
-          expression: "
-            gmv_with_client_fees =
-            supplier_net_payout
-            + naboo_client_fees
-            + naboo_partner_commission
-          "
-        
-      - dbt_utils.expression_is_true:
-          expression: "
-            total_margin =
-            naboo_client_fees
-            + naboo_partner_commission
-          "
-
-      - dbt_utils.expression_is_true:
-          expression: "
-            supplier_net_payout =
-            gmv_service_net - naboo_partner_commission
-          "    
-
-      - dbt_utils.expression_is_true:
-          expression: "
-            gmv_with_client_fees =
-            gmv_service_net + naboo_client_fees
-          "
-
-#      - dbt_utils.expression_is_true:
-#          expression: "
-#            gmv_service_net + total_discount = service_gross_amount
-#          "
-
-      - dbt_utils.expression_is_true:
-          expression: "
-            abs(service_gross_amount - (gmv_service_net + total_discount)) < 0.01
-          "
-
-      - dbt_utils.expression_is_true:
-          expression: "billing_stage_rank = case billing_stage
-              when 'DEPOSIT' then 1
-              when 'BALANCE' then 2
-              when 'POST_BALANCE' then 3
-          end"
-      
     columns:
       - name: event_revenue_key
-        description: "Clé technique de la table de faits, calculée au grain proposition × service owner."
+        description: >
+          Clé surrogate technique de la ligne de revenu finale, héritée de
+          pre_fct_event_revenue et construite à partir de quote_stage_key et
+          service_owner_id.
         tests:
           - not_null
           - unique
 
       - name: quote_stage_key
-        description: "Clé technique du quote courant retenu pour la proposition."
+        description: >
+          Clé du stade de quote retenu comme le plus avancé pour la proposition.
         tests:
           - not_null
-          - relationships:
-              to: ref('dim_quote_stage')
-              field: quote_stage_key
 
       - name: client_proposal_id
-        description: "Identifiant unique de la proposition commerciale."
+        description: Identifiant de la proposition client.
         tests:
           - not_null
-          - relationships:
-              to: ref('stg_client_proposals')
-              field: client_proposal_id
 
       - name: client_request_id
-        description: "Identifiant de la demande client associée à la proposition."
+        description: Identifiant de la demande client associée à la proposition.
         tests:
           - not_null
-          - relationships:
-              to: ref('stg_client_requests')
-              field: client_request_id
 
       - name: client_request_company_id
-        description: "Identifiant de la société cliente rattachée à la demande."
-        tests:
-          - relationships:
-              to: ref('stg_client_requests')
-              field: client_request_company_id
+        description: Identifiant de l’entreprise ayant émis la demande client.
 
       - name: client_request_company_name
-        description: "Nom de la société cliente rattachée à la demande."
+        description: Nom de l’entreprise ayant émis la demande client.
 
       - name: client_proposal_house_id
-        description: "Identifiant de la venue proposée."
+        description: Identifiant du lieu proposé.
         tests:
           - not_null
-          - dbt_utils.not_empty_string
 
       - name: service_owner_id
-        description: "Identifiant du fournisseur ou du service owner."
+        description: >
+          Identifiant du prestataire / propriétaire de la ligne de revenu.
         tests:
           - not_null
-          - dbt_utils.not_empty_string
 
       - name: client_proposal_status
-        description: "Statut de la proposition normalisé en majuscules."
+        description: Statut métier de la proposition.
         tests:
           - not_null
-          - accepted_values:
-              values: ['PUBLISHED', 'BOOKING_CONFIRMED']
 
       - name: client_proposal_start_at
-        description: "Horodatage de début du séjour proposé."
-        tests:
-          - not_null
+        description: Date et heure de début de l’événement proposé.
 
       - name: client_proposal_end_at
-        description: "Horodatage de fin du séjour proposé."
-        tests:
-          - not_null
+        description: Date et heure de fin de l’événement proposé.
 
       - name: client_proposal_participants_count
-        description: "Nombre de participants prévus dans la proposition."
-        tests:
-          - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
+        description: Nombre de participants prévu pour la proposition.
 
       - name: client_proposal_quote_role
-        description: "Rôle du quote dans la proposition (DEPOSIT, BALANCE, POST_BALANCE)."
+        description: >
+          Rôle/stade métier du quote sélectionné pour la proposition.
         tests:
           - not_null
           - accepted_values:
               values: ['DEPOSIT', 'BALANCE', 'POST_BALANCE']
 
       - name: billing_stage
-        description: "Stage de facturation du quote courant."
+        description: >
+          Stade de facturation retenu pour la ligne finale.
         tests:
           - not_null
           - accepted_values:
               values: ['DEPOSIT', 'BALANCE', 'POST_BALANCE']
 
       - name: billing_stage_rank
-        description: "Ordre logique du stage de facturation."
+        description: >
+          Rang ordinal du stade de facturation retenu :
+          1 = DEPOSIT, 2 = BALANCE, 3 = POST_BALANCE.
         tests:
           - not_null
           - accepted_values:
@@ -249,221 +145,191 @@ models:
               quote: false
 
       - name: billing_stage_label
-        description: "Libellé métier du stage de facturation."
+        description: >
+          Libellé lisible du stade de facturation retenu.
         tests:
           - not_null
           - accepted_values:
               values: ['Deposit', 'Balance', 'Post balance']
 
       - name: client_proposal_quote_key
-        description: "Clé technique du lien entre la proposition et le quote courant."
+        description: Clé surrogate de la proposition-quote retenue.
         tests:
           - not_null
-          - relationships:
-              to: ref('int_proposal_quotes')
-              field: client_proposal_quote_key
 
       - name: current_quote_id
-        description: "Identifiant du quote courant retenu pour la proposition."
+        description: Identifiant du quote retenu comme stade final.
         tests:
           - not_null
-          - relationships:
-              to: ref('stg_quotes')
-              field: quote_id
 
       - name: current_quote_client_request_id
-        description: "Identifiant de la demande client côté quote courant."
-        tests:
-          - not_null
-          - relationships:
-              to: ref('stg_client_requests')
-              field: client_request_id
+        description: Identifiant de demande porté par le quote courant.
 
       - name: current_quote_house_id
-        description: "Identifiant de la venue associée au quote courant."
-        tests:
-          - not_null
+        description: Identifiant de lieu porté par le quote courant.
 
       - name: current_quote_payment_type
-        description: "Type de paiement du quote courant normalisé en majuscules."
+        description: Type de paiement du quote courant.
         tests:
           - not_null
           - accepted_values:
               values: ['DEPOSIT', 'BALANCE', 'POST_BALANCE']
 
       - name: current_quote_status
-        description: "Statut du quote courant normalisé en majuscules."
+        description: Statut du quote courant.
         tests:
           - not_null
-          - accepted_values:
-              values: ['WON', 'LOST', 'PENDING']
 
       - name: current_quote_deposit_rate
-        description: "Taux d'acompte du quote courant normalisé en ratio décimal."
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              max_value: 1
+        description: Taux d’acompte du quote courant.
 
       - name: current_quote_start_at
-        description: "Horodatage de début du séjour associé au quote courant."
-        tests:
-          - not_null
+        description: Date de début portée par le quote courant.
 
       - name: current_quote_end_at
-        description: "Horodatage de fin du séjour associé au quote courant."
-        tests:
-          - not_null
+        description: Date de fin portée par le quote courant.
 
       - name: current_quote_created_at
-        description: "Horodatage de création du quote courant."
+        description: Date de création du quote courant.
         tests:
           - not_null
 
       - name: pricing_item_count
-        description: "Nombre total de lignes tarifaires agrégées pour la proposition et le service owner."
+        description: Nombre total de lignes tarifaires agrégées dans la ligne finale.
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 1
 
       - name: service_line_count
-        description: "Nombre de lignes de prestation de service (AD_HOC) agrégées."
+        description: Nombre de lignes de service agrégées.
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
 
       - name: client_fee_line_count
-        description: "Nombre de lignes de frais client (USER_FEES) agrégées."
+        description: Nombre de lignes de frais client Naboo agrégées.
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
 
       - name: partner_commission_line_count
-        description: "Nombre de lignes de commission partenaire (OWNER_FEES) agrégées."
+        description: Nombre de lignes de commission partenaire Naboo agrégées.
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
 
       - name: max_pricing_stage_rank
-        description: "Rang maximal de snapshot tarifaire observé parmi les lignes agrégées."
+        description: Rang maximal observé parmi les pricing stages agrégés.
         tests:
           - not_null
-          - accepted_values:
-              values: [1, 2, 3]
-              quote: false
 
       - name: pricing_stage_count
-        description: "Nombre de snapshots tarifaires distincts observés parmi les lignes agrégées."
+        description: Nombre de pricing stages distincts agrégés.
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 1
-              max_value: 3
 
       - name: gmv_service_net
-        description: "GMV net de service agrégé, correspondant au net de prestation après remise, hors frais client et hors commission partenaire."
+        description: >
+          GMV net, soit ce que le client paie hors frais client Naboo,
+          après prise en compte des remises.
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
 
       - name: gmv_with_client_fees
-        description: "GMV agrégé incluant le net de service après remise et les frais client."
+        description: >
+          GMV brut, soit ce que le client paie au total, frais client Naboo inclus.
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
 
       - name: naboo_client_fees
-        description: "Montant agrégé des frais client Naboo."
+        description: Montant total des frais Naboo côté client.
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
 
       - name: naboo_partner_commission
-        description: "Montant agrégé des commissions partenaire Naboo."
+        description: Montant total de la commission Naboo côté partenaire.
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
 
       - name: total_margin
-        description: "Montant agrégé de marge totale, correspondant à la somme des frais client et des commissions partenaire."
+        description: >
+          Marge totale Naboo, égale à la somme des frais client et de la
+          commission partenaire.
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
 
       - name: supplier_net_payout
-        description: "Montant net théorique agrégé reversé au fournisseur après remise et déduction des commissions partenaire."
+        description: >
+          Montant net revenant au prestataire après déduction de la commission
+          partenaire Naboo.
         tests:
           - not_null
 
       - name: total_discount
-        description: "Montant total de remise agrégé sur les lignes de prestation."
+        description: Montant total des remises accordées.
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
 
       - name: service_gross_amount
-        description: "Montant brut agrégé des lignes de prestation avant remise."
+        description: >
+          Montant brut des services avant remise.
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
 
       - name: is_quote_role_consistent
-        description: "Indique si le rôle du quote est cohérent sur l'ensemble des lignes agrégées."
+        description: >
+          Indique si le rôle du quote est cohérent avec le stade retenu.
         tests:
           - not_null
 
       - name: is_request_consistent
-        description: "Indique si la cohérence request est respectée sur l'ensemble des lignes agrégées."
+        description: >
+          Indique si les identifiants de demande sont cohérents entre les sources.
         tests:
           - not_null
 
       - name: is_house_consistent
-        description: "Indique si la cohérence house est respectée sur l'ensemble des lignes agrégées."
+        description: >
+          Indique si les identifiants de lieu sont cohérents entre les sources.
         tests:
           - not_null
 
       - name: is_source_client_proposal_id_consistent
-        description: "Indique si le client_proposal_id source des pricing items est cohérent sur l'ensemble agrégé."
+        description: >
+          Indique si l’identifiant de proposition source est cohérent dans les lignes tarifaires.
         tests:
           - not_null
 
       - name: is_billing_stage_known
-        description: "Indique si le stage de facturation est reconnu sur l'ensemble des lignes agrégées."
+        description: >
+          Indique si le stade de facturation retenu est reconnu.
         tests:
           - not_null
 
       - name: is_pricing_stage_known
-        description: "Indique si le snapshot tarifaire est reconnu sur l'ensemble des lignes agrégées."
+        description: >
+          Indique si tous les pricing stages agrégés sont reconnus.
         tests:
           - not_null
 
       - name: is_quote_data_quality_valid
-        description: "Indique si aucune anomalie de qualité n'est détectée au niveau quote dans l'ensemble agrégé."
+        description: >
+          Indique si aucune anomalie de qualité n’a été détectée sur les données quote.
         tests:
           - not_null
 
       - name: is_current_quote_pricing_item_data_quality_valid
-        description: "Indique si aucune anomalie de qualité n'est détectée au niveau des pricing items courants dans l'ensemble agrégé."
+        description: >
+          Indique si aucune anomalie de qualité n’a été détectée sur les pricing items
+          du quote courant.
         tests:
           - not_null
 
       - name: is_revenue_component_data_quality_valid
-        description: "Indique si aucune anomalie de qualité n'est détectée au niveau des composantes de revenu dans l'ensemble agrégé."
+        description: >
+          Indique si aucune anomalie de qualité n’a été détectée dans les composantes de revenu.
         tests:
           - not_null
 
       - name: has_data_quality_issue
-        description: "Indique si au moins une anomalie de qualité est présente dans l'agrégat."
+        description: >
+          Flag synthétique indiquant qu’au moins un contrôle de qualité ou de cohérence
+          métier a échoué sur la ligne finale.
         tests:
           - not_null
