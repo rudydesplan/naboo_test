@@ -127,6 +127,7 @@ aggregated as (
         round(sum(rc.total_margin_amount), 2) as total_margin,
         round(sum(rc.net_supplier_payout_amount), 2) as supplier_net_payout,
         round(sum(rc.discount_amount), 2) as total_discount,
+		round(sum(rc.service_gross_amount), 2) as service_gross_amount
 
         logical_and(rc.is_quote_role_consistent) as is_quote_role_consistent,
         logical_and(rc.is_request_consistent) as is_request_consistent,
@@ -211,6 +212,7 @@ select
     total_margin,
     supplier_net_payout,
     total_discount,
+	service_gross_amount,
     is_quote_role_consistent,
     is_request_consistent,
     is_house_consistent,
