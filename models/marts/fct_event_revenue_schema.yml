@@ -5,7 +5,7 @@ models:
     description: >
       Table de faits agrégée des revenus par événement et par service owner, construite à partir
       des composantes de revenu calculées au niveau ligne tarifaire. Le grain est :
-      1 ligne = 1 proposition × 1 service_owner_id, agrégée sur le quote courant et son stage
+      1 ligne = 1 quote_stage × 1 service_owner_id, agrégée sur le quote courant et son stage
       de facturation, avec les principaux indicateurs de GMV, de marge, de commissions,
       de reversement fournisseur et de qualité de données.
 
@@ -65,6 +65,9 @@ models:
           expression: "gmv_with_client_fees >= gmv_service_net"
 
       - dbt_utils.expression_is_true:
+          expression: "gmv_with_client_fees >= naboo_client_fees"
+
+      - dbt_utils.expression_is_true:
           expression: "total_margin = naboo_client_fees + naboo_partner_commission"
 
       - dbt_utils.expression_is_true:
@@ -86,7 +89,7 @@ models:
           expression: "pricing_item_count >= partner_commission_line_count"
 
       - dbt_utils.expression_is_true:
-          expression: "pricing_item_count >= service_line_count + client_fee_line_count + partner_commission_line_count"
+          expression: "pricing_item_count = service_line_count + client_fee_line_count + partner_commission_line_count"
 
       - dbt_utils.expression_is_true:
           expression: "client_proposal_quote_role = billing_stage"
@@ -99,9 +102,27 @@ models:
 
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - client_proposal_id
+            - quote_stage_key
             - service_owner_id
+            
+      - dbt_utils.expression_is_true:
+          expression: "pricing_stage_count = 1"
+    
+      - dbt_utils.expression_is_true:
+          expression: >
+            gmv_with_client_fees =
+            supplier_net_payout
+            + naboo_client_fees
+            + naboo_partner_commission
+            + total_discount
 
+      - dbt_utils.expression_is_true:
+          expression: "billing_stage_rank = case billing_stage
+              when 'DEPOSIT' then 1
+              when 'BALANCE' then 2
+              when 'POST_BALANCE' then 3
+          end"
+      
     columns:
       - name: event_revenue_key
         description: "Clé technique de la table de faits, calculée au grain proposition × service owner."

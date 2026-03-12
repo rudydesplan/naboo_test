@@ -79,7 +79,7 @@ aggregated as (
 
     select
         {{ dbt_utils.generate_surrogate_key([
-            'rc.client_proposal_id',
+            'rc.quote_stage_key',
             'rc.service_owner_id'
         ]) }} as event_revenue_key,
 
