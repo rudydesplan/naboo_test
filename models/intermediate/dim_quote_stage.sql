@@ -181,7 +181,8 @@ select
     client_proposal_start_at,
     client_proposal_end_at,
     client_proposal_participants_count,
-
+	client_proposal_quote_role,
+	
     billing_stage,
     billing_stage_rank,
     billing_stage_label,
