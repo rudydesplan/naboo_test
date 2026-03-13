@@ -382,6 +382,9 @@ L’ancienne vue ne sera supprimée qu’après :
 
 ---
 
+![Modeles coexistence](dbt_parallel_migration_flow.svg)
+
+---
 ### Résumé de l’approche de coexistence
 
 La bonne transition n’est pas :
@@ -396,5 +399,6 @@ La bonne transition est :
 
 
 C’est la manière la plus sûre de migrer un modèle sensible déjà utilisé par Finance en production.
+
 
 
