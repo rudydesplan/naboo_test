@@ -71,6 +71,11 @@ Je migre en premier les couches qui structurent le reste :
 
 La bonne approche est de **reconstruire le noyau stable** avant de migrer les couches de consommation.
 
+Je mets également en place dès cette phase les premiers mécanismes d’industrialisation :
+- exécution dbt automatisée,
+- premiers tests de qualité,
+- pipeline CI/CD minimal pour sécuriser les changements.
+
 Pour le modèle de revenus, je ferais une migration très encadrée :
 - reproduction fidèle de la logique actuelle,
 - tests de qualité,
@@ -94,7 +99,7 @@ Pour chaque lot :
 - j’ajoute les tests de base,
 - je documente le grain, les règles, les dépendances,
 - je compare les résultats avec l’existant,
-- je prépare un plan de bascule.
+- je prépare les mécanismes de **comparaison old vs new** nécessaires au parallel run.
 
 En parallèle, je mets en place :
 - conventions de nommage,
@@ -114,7 +119,7 @@ La fin des 90 jours sert à :
 - décommissionner les anciennes vues devenues inutiles,
 - formaliser les règles d’exploitation.
 
-Je garde une période de coexistence contrôlée entre :
+Je garde une période de coexistence contrôlée (**parallel run**) entre :
 - les vues historiques,
 - les modèles dbt équivalents.
 
@@ -330,5 +335,6 @@ La bonne transition est :
 - **validation métier**,
 - **bascule contrôlée**,
 - **décommissionnement tardif**.
+
 
 C’est la manière la plus sûre de migrer un modèle sensible déjà utilisé par Finance en production.
