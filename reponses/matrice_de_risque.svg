@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 530" width="800" height="530">
+
+<style>
+.title { font: bold 20px sans-serif; fill:#333 }
+.axis { font: 12px sans-serif; fill:#555 }
+.quadrant-title { font: bold 14px sans-serif; fill:#222 }
+.desc { font: 11px sans-serif; fill:#333 }
+.grid { stroke:#cccccc; stroke-width:1 }
+</style>
+
+<!-- Title -->
+<text x="400" y="30" text-anchor="middle" class="title">
+Matrice de Risque – Migration vers dbt
+</text>
+
+<!-- Axis labels -->
+<text x="400" y="510" text-anchor="middle" class="axis">
+Probabilité de problème
+</text>
+
+<text x="20" y="265" transform="rotate(-90,20,265)" text-anchor="middle" class="axis">
+Impact métier
+</text>
+
+<!-- Grid lines -->
+<line x1="150" y1="80" x2="150" y2="450" class="grid"/>
+<line x1="475" y1="80" x2="475" y2="450" class="grid"/>
+<line x1="150" y1="265" x2="800" y2="265" class="grid"/>
+
+<!-- Quadrant backgrounds -->
+
+<!-- Low risk -->
+<rect x="150" y="265" width="325" height="185" fill="#dff5e3"/>
+
+<!-- Technical cleanup -->
+<rect x="475" y="265" width="325" height="185" fill="#fff5cc"/>
+
+<!-- Critical but stable -->
+<rect x="150" y="80" width="325" height="185" fill="#dfe8ff"/>
+
+<!-- High risk -->
+<rect x="475" y="80" width="325" height="185" fill="#ffdede"/>
+
+<!-- Quadrant titles -->
+
+<text x="312" y="105" text-anchor="middle" class="quadrant-title">
+Critique mais Stable
+</text>
+
+<text x="638" y="105" text-anchor="middle" class="quadrant-title">
+Risque Élevé
+</text>
+
+<text x="312" y="290" text-anchor="middle" class="quadrant-title">
+Risque Faible
+</text>
+
+<text x="638" y="290" text-anchor="middle" class="quadrant-title">
+Nettoyage Technique
+</text>
+
+<!-- Descriptions -->
+
+<text x="312" y="125" text-anchor="middle" class="desc">
+Impact élevé
+</text>
+<text x="312" y="140" text-anchor="middle" class="desc">
+Migrer avec validation métier
+</text>
+
+<text x="638" y="125" text-anchor="middle" class="desc">
+Impact élevé + probabilité forte
+</text>
+<text x="638" y="140" text-anchor="middle" class="desc">
+Analyse approfondie
+</text>
+
+<text x="312" y="310" text-anchor="middle" class="desc">
+Faible impact
+</text>
+<text x="312" y="325" text-anchor="middle" class="desc">
+Quick migrations
+</text>
+
+<text x="638" y="310" text-anchor="middle" class="desc">
+Complexité technique
+</text>
+<text x="638" y="325" text-anchor="middle" class="desc">
+Simplifier ou supprimer
+</text>
+
+<!-- Axis arrows -->
+
+<polygon points="795,265 785,258 785,272" fill="#333"/>
+<polygon points="150,85 142,98 158,98" fill="#333"/>
+
+</svg>
