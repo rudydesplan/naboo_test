@@ -153,6 +153,59 @@ Je garde aussi quelques “quick wins” pour installer rapidement de la valeur 
 
 ---
 
+![Matrice de priorisation dbt](matrice_de_priorisation.svg)
+
+#### Stratégie d'actions : 
+
+* **Quick Wins (Valeur haute, Complexité basse)** : Migrer immédiatement pour générer rapidement de la valeur métier et démontrer l’avancement de la migration.
+
+* **Projets Stratégiques (Valeur haute, Complexité haute)** : Planifier et sécuriser la migration avec analyse détaillée, refactoring progressif et validation métier.
+
+* **Tâches de remplissage (Valeur basse, Complexité basse)** : Migrer opportunément lorsque du temps est disponible, sans en faire une priorité.
+
+* **À reconsidérer / Déprioriser (Valeur basse, Complexité haute)** : Reporter ou supprimer si possible afin d’éviter d’investir du temps sur des objets à faible valeur.
+
+## Matrice de Risque (Complément de la matrice de priorisation)
+
+La matrice de priorisation permet d’identifier **ce qu’il faut migrer en premier pour générer de la valeur**.
+
+Cependant, certaines vues peuvent présenter **un risque technique ou analytique élevé**, même si leur valeur métier n’est pas immédiatement visible.
+
+Pour gérer cette dimension, j’utilise **une seconde matrice : la Matrice de Risque**.
+
+Cette matrice permet d’identifier les objets qui nécessitent **une attention particulière avant migration**.
+
+![Matrice de risque dbt](matrice_de_risque.svg)
+
+
+Les deux matrices répondent à deux questions différentes :
+
+| Matrice                 | Question                                |
+| ----------------------- | --------------------------------------- |
+| Matrice de priorisation | Où créer rapidement de la valeur ?      |
+| Matrice de risque       | Où se trouvent les dangers techniques ? |
+
+### La Matrice Combinée : Priorité vs Risque
+
+![Matrice combinee dbt](matrice_combinee.svg)
+
+
+### Stratégie d’actions
+
+**Priorité haute + risque élevé**
+À traiter en priorité. Ces éléments ont un fort impact métier et comportent des incertitudes techniques qu’il faut lever rapidement (analyse, clarification des règles métier, ajout de tests).
+
+**Priorité haute + risque faible**
+Ils peuvent être migrés rapidement pour générer de la valeur et démontrer l’avancement de la migration.
+
+**Priorité basse + risque élevé**
+À **surveiller**. Ces objets peuvent être complexes mais leur impact métier est limité. Il vaut mieux éviter d’y investir trop de temps dans un premier temps.
+
+**Priorité basse + risque faible**
+À traiter **en fin de sprint ou en tâches de remplissage**, lorsque les éléments critiques et prioritaires ont déjà été migrés.
+
+---
+
 ### Ce que j’éviterais au début
 
 Au début, j’éviterais surtout 5 erreurs classiques :
@@ -343,4 +396,5 @@ La bonne transition est :
 
 
 C’est la manière la plus sûre de migrer un modèle sensible déjà utilisé par Finance en production.
+
 
