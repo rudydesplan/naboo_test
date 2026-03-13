@@ -109,6 +109,32 @@ Ces colonnes contiennent des **listes d'identifiants de devis**.
 
 Cela implique qu’une proposition peut référencer **plusieurs quotes correspondant aux différentes étapes de paiement**.
 
+# Diagramme
+
+```text
+                    client_requests
+                           │
+           ┌───────────────┴───────────────┐
+           │                               │
+           ▼                               ▼
+   client_proposals                    quotes
+           │                               │
+           │                               ▼
+           │                        client_pricing_items
+           │
+           └──── references quotes
+                via quote_ids lists
+```
+
+
+Interprétation métier :
+
+1. Une **entreprise soumet une demande** (`client_requests`)
+2. Naboo propose **plusieurs lieux / propositions** (`client_proposals`)
+3. Chaque proposition peut générer **plusieurs devis** (`quotes`)
+4. Chaque devis contient **plusieurs lignes tarifaires** (`client_pricing_items`)
+   
+
 ---
 
 # 0.3 — Quels types de lignes existent dans `client_pricing_items` ?
@@ -206,8 +232,10 @@ Cette colonne ne peut donc pas être utilisée comme clé de jointure principale
 Le lien réel est :
 
     client_proposals
-        → quotes
-            → client_pricing_items
+        └─ references quotes via quote_id lists
+    
+    quotes
+        └─ contains client_pricing_items
 
 La modélisation devra donc reconstruire explicitement ce mapping.
 
@@ -289,6 +317,35 @@ Ce découpage permet de séparer :
 2️⃣ **la reconstruction des relations métier**
 
 3️⃣ **l'exposition des tables analytiques**
+
+---
+
+# 📊 Modèle relationnel cible
+
+Le système source ne fournit pas directement un modèle relationnel exploitable pour l’analyse.
+En particulier, les propositions référencent les devis via **des listes d’identifiants**, ce qui empêche de reconstruire facilement les relations analytiques.
+
+L’objectif est donc de **reconstruire un modèle relationnel cohérent** permettant d’analyser les revenus par événement et par prestataire.
+
+Le modèle cible est le suivant :
+
+```text
+client_requests
+        │
+        │ 1:N
+        ▼
+client_proposals
+        │
+        │ 1:N
+        ▼
+quotes
+        │
+        │ 1:N
+        ▼
+client_pricing_items
+```
+
+La couche **intermediate** du projet dbt a pour rôle de **reconstruire explicitement ces relations** à partir des données sources.
 
 ---
 
@@ -374,8 +431,8 @@ Le grain devient :
 
 Pour éviter le double comptage, le pipeline sélectionne **le quote le plus avancé** et **le snapshot tarifaire le plus récent**.
 
-* `dim_quote_stage` identifie pour chaque proposition le devis le plus avancé (selon l'ordre `POST_BALANCE > BALANCE > DEPOSIT` et le statut `WON`).
-* `int_current_quote_pricing_items` retient pour ce devis le snapshot tarifaire le plus récent (`POST_FINAL > FINAL > INITIAL`).
+* `dim_quote_stage` identifie, pour chaque proposition et pour chaque rôle de quote (`DEPOSIT`, `BALANCE`, `POST_BALANCE`), le quote courant retenu, en priorisant la cohérence métier, puis le statut `WON`, puis le plus récent.
+* `int_current_quote_pricing_items` prend ce quote courant retenu et conserve, pour ses lignes tarifaires, le snapshot tarifaire le plus avancé. (`POST_FINAL > FINAL > INITIAL`).
 
 ---
 
@@ -458,7 +515,7 @@ La table `pre_fct_event_revenue` et `fct_event_revenue` incluent des vérificati
 
     # Marge totale = commission + frais client
     expression: "total_margin = naboo_client_fees + naboo_partner_commission"
-
+    
     # Payout fournisseur = GMV net - commission partenaire
     expression: "supplier_net_payout = gmv_service_net - naboo_partner_commission"
 
