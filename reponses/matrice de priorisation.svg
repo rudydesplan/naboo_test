@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 650" width="900" height="650">
+
+<style>
+.title { font: bold 26px sans-serif; fill: #333; }
+.axis { font: bold 16px sans-serif; fill: #444; }
+.label { font: bold 15px sans-serif; fill: #222; }
+.desc { font: 13px sans-serif; fill: #444; }
+.grid { stroke: #cccccc; stroke-width: 2; }
+.quad1 { fill: #d4edda; }
+.quad2 { fill: #cfe2ff; }
+.quad3 { fill: #f8d7da; }
+.quad4 { fill: #fff3cd; }
+</style>
+
+<!-- Title -->
+<text x="450" y="40" text-anchor="middle" class="title">
+Matrice de Priorisation – Migration dbt
+</text>
+
+<!-- Quadrants -->
+<rect x="200" y="100" width="250" height="200" class="quad1"/>
+<rect x="450" y="100" width="250" height="200" class="quad2"/>
+<rect x="200" y="300" width="250" height="200" class="quad3"/>
+<rect x="450" y="300" width="250" height="200" class="quad4"/>
+
+<!-- Grid lines -->
+<line x1="450" y1="100" x2="450" y2="500" class="grid"/>
+<line x1="200" y1="300" x2="700" y2="300" class="grid"/>
+
+<!-- Axes -->
+<text x="450" y="580" text-anchor="middle" class="axis">
+Complexité / Effort de migration
+</text>
+
+<text transform="rotate(-90 70 320)" x="70" y="320" text-anchor="middle" class="axis">
+Valeur métier / centralité
+</text>
+
+<!-- Axis arrows -->
+<polygon points="690,575 710,580 690,585" fill="#444"/>
+<polygon points="65,110 70,90 75,110" fill="#444"/>
+
+<!-- Quadrant labels -->
+
+<!-- Quick wins -->
+<text x="325" y="150" text-anchor="middle" class="label">Quick Wins</text>
+<text x="325" y="175" text-anchor="middle" class="desc">Valeur élevée</text>
+<text x="325" y="195" text-anchor="middle" class="desc">Complexité faible</text>
+<text x="325" y="220" text-anchor="middle" class="desc">Vues simples</text>
+<text x="325" y="240" text-anchor="middle" class="desc">premiers modèles dbt</text>
+
+<!-- Strategic core -->
+<text x="575" y="150" text-anchor="middle" class="label">Strategic Core</text>
+<text x="575" y="175" text-anchor="middle" class="desc">Forte valeur métier</text>
+<text x="575" y="195" text-anchor="middle" class="desc">mais logique complexe</text>
+<text x="575" y="220" text-anchor="middle" class="desc">ex: modèles Finance</text>
+<text x="575" y="240" text-anchor="middle" class="desc">revenus / facturation</text>
+
+<!-- Low priority -->
+<text x="325" y="350" text-anchor="middle" class="label">Low Priority</text>
+<text x="325" y="375" text-anchor="middle" class="desc">Faible impact métier</text>
+<text x="325" y="395" text-anchor="middle" class="desc">et faible complexité</text>
+<text x="325" y="420" text-anchor="middle" class="desc">Vues exploratoires</text>
+
+<!-- Complex / Defer -->
+<text x="575" y="350" text-anchor="middle" class="label">Complex / Defer</text>
+<text x="575" y="375" text-anchor="middle" class="desc">Complexité élevée</text>
+<text x="575" y="395" text-anchor="middle" class="desc">Valeur métier limitée</text>
+<text x="575" y="420" text-anchor="middle" class="desc">A migrer en dernier</text>
+
+</svg>
