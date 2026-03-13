@@ -130,6 +130,11 @@ Je ne supprime jamais une ancienne vue tant que :
 
 ---
 
+![Plan de migration dbt](dbt_migration_gantt.svg)
+
+
+---
+
 ### Ma logique de priorisation
 
 Je priorise selon 4 critères :
@@ -338,3 +343,4 @@ La bonne transition est :
 
 
 C’est la manière la plus sûre de migrer un modèle sensible déjà utilisé par Finance en production.
+
