@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 650" width="1100" height="650">
+
+<style>
+.title { font: bold 26px sans-serif; fill:#333 }
+.axis { font: 13px sans-serif; fill:#666 }
+.phase { font: bold 16px sans-serif; fill:#444 }
+.task { font: 13px sans-serif; fill:#333 }
+
+.grid { stroke:#e5e5e5; stroke-width:1 }
+
+.phase1 { fill:#f3f4ff }
+.phase2 { fill:#ffffff }
+.phase3 { fill:#fffbe6 }
+.phase4 { fill:#ffffff }
+
+.bar { fill:#8a99f1; stroke:#6e7be6; stroke-width:1.5; rx:4 }
+.bar-parallel { fill:#f6b26b; stroke:#d38c2c; stroke-width:1.5; rx:4 }
+</style>
+
+<text x="550" y="40" text-anchor="middle" class="title">
+Plan de Migration dbt sur 90 jours
+</text>
+
+<!-- PHASE BACKGROUNDS -->
+
+<rect x="0" y="60" width="1100" height="120" class="phase1"/>
+<rect x="0" y="180" width="1100" height="160" class="phase2"/>
+<rect x="0" y="340" width="1100" height="160" class="phase3"/>
+<rect x="0" y="500" width="1100" height="120" class="phase4"/>
+
+<!-- GRID -->
+
+<g transform="translate(200,60)">
+
+<line x1="0" y1="0" x2="0" y2="560" class="grid"/>
+<text x="0" y="580" class="axis">J1</text>
+
+<line x1="100" y1="0" x2="100" y2="560" class="grid"/>
+<text x="100" y="580" class="axis">J10</text>
+
+<line x1="200" y1="0" x2="200" y2="560" class="grid"/>
+<text x="200" y="580" class="axis">J20</text>
+
+<line x1="300" y1="0" x2="300" y2="560" class="grid"/>
+<text x="300" y="580" class="axis">J30</text>
+
+<line x1="400" y1="0" x2="400" y2="560" class="grid"/>
+<text x="400" y="580" class="axis">J40</text>
+
+<line x1="500" y1="0" x2="500" y2="560" class="grid"/>
+<text x="500" y="580" class="axis">J50</text>
+
+<line x1="600" y1="0" x2="600" y2="560" class="grid"/>
+<text x="600" y="580" class="axis">J60</text>
+
+<line x1="700" y1="0" x2="700" y2="560" class="grid"/>
+<text x="700" y="580" class="axis">J70</text>
+
+<line x1="800" y1="0" x2="800" y2="560" class="grid"/>
+<text x="800" y="580" class="axis">J80</text>
+
+<line x1="900" y1="0" x2="900" y2="560" class="grid"/>
+<text x="900" y="580" class="axis">J90</text>
+
+</g>
+
+<!-- PHASE LABELS -->
+
+<text x="20" y="95" class="phase">Phase 1 — Cartographie</text>
+<text x="20" y="215" class="phase">Phase 2 — Cœur métier</text>
+<text x="20" y="375" class="phase">Phase 3 — Migration dépendances</text>
+<text x="20" y="535" class="phase">Phase 4 — Bascule et Parallel Run</text>
+
+<!-- TASK BARS -->
+
+<!-- Phase 1 -->
+<rect x="210" y="90" width="70" height="28" class="bar"/>
+<text x="290" y="110" class="task">Inventaire et Cartographie</text>
+
+<rect x="280" y="125" width="80" height="28" class="bar"/>
+<text x="370" y="145" class="task">Priorisation</text>
+
+<!-- Phase 2 -->
+<rect x="350" y="210" width="100" height="28" class="bar"/>
+<text x="460" y="230" class="task">Setup dbt + CI/CD</text>
+
+<rect x="450" y="245" width="150" height="28" class="bar"/>
+<text x="610" y="265" class="task">Migration modèle revenus</text>
+
+<rect x="520" y="280" width="120" height="28" class="bar"/>
+<text x="650" y="300" class="task">Validation Finance</text>
+
+<!-- Phase 3 -->
+<rect x="600" y="370" width="150" height="28" class="bar"/>
+<text x="760" y="390" class="task">Migration lot Finance</text>
+
+<rect x="750" y="405" width="100" height="28" class="bar"/>
+<text x="860" y="425" class="task">Migration lot Ops</text>
+
+<rect x="850" y="440" width="70" height="28" class="bar"/>
+<text x="930" y="460" class="task">Autres lots</text>
+
+<!-- Phase 4 -->
+
+<rect x="900" y="520" width="70" height="28" class="bar"/>
+<text x="980" y="540" class="task">Bascule dashboards</text>
+
+<rect x="900" y="555" width="70" height="28" class="bar-parallel"/>
+<text x="980" y="575" class="task">Parallel run</text>
+
+<rect x="970" y="590" width="60" height="28" class="bar"/>
+<text x="1040" y="610" class="task">Décommission</text>
+
+</svg>
