@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1000" width="1200" height="1000">
+
+<style>
+.title { font: bold 26px sans-serif; fill:#333; }
+.step { fill:#eef3ff; stroke:#4f63d8; stroke-width:2; }
+.decision { fill:#fff4d6; stroke:#e0a000; stroke-width:2; }
+.retry { fill:#ffeaea; stroke:#d9534f; stroke-width:2; }
+.success { fill:#e8f7ec; stroke:#28a745; stroke-width:2; }
+.text { font:14px sans-serif; fill:#333; text-anchor:middle; dominant-baseline:middle;}
+.arrow { stroke:#555; stroke-width:2; marker-end:url(#arrow); }
+.retryArrow { stroke:#d9534f; stroke-width:2; stroke-dasharray:6 4; marker-end:url(#arrow); }
+</style>
+
+<defs>
+<marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+<path d="M0,0 L9,3 L0,6 Z" fill="#555"/>
+</marker>
+</defs>
+
+<text x="600" y="40" class="title" text-anchor="middle">
+Migration contrôlée : Ancienne vue → Modèle dbt
+</text>
+
+<!-- BUILD -->
+<rect x="430" y="90" width="340" height="60" class="step"/>
+<text x="600" y="120" class="text">Construire le nouveau modèle dbt</text>
+<text x="600" y="135" class="text">dbt_prod.fct_event_revenue</text>
+
+<!-- PARALLEL RUN -->
+<rect x="200" y="200" width="280" height="70" class="step"/>
+<text x="340" y="230" class="text">Ancienne vue (production)</text>
+<text x="340" y="245" class="text">finance.revenue_model</text>
+
+<rect x="720" y="200" width="280" height="70" class="step"/>
+<text x="860" y="230" class="text">Nouveau modèle dbt</text>
+<text x="860" y="245" class="text">dbt_prod.fct_event_revenue</text>
+
+<line x1="600" y1="150" x2="340" y2="200" class="arrow"/>
+<line x1="600" y1="150" x2="860" y2="200" class="arrow"/>
+
+<!-- RECONCILIATION -->
+<rect x="430" y="330" width="340" height="90" class="step"/>
+<text x="600" y="355" class="text">Réconciliation automatique</text>
+<text x="600" y="375" class="text">GMV / Net revenue / Quotes / Events</text>
+<text x="600" y="395" class="text">Comparaison OLD vs NEW</text>
+
+<line x1="340" y1="270" x2="600" y2="330" class="arrow"/>
+<line x1="860" y1="270" x2="600" y2="330" class="arrow"/>
+
+<!-- DECISION 1 -->
+<polygon points="600,460 760,540 600,620 440,540" class="decision"/>
+<text x="600" y="540" class="text">Écarts acceptables ?</text>
+
+<line x1="600" y1="420" x2="600" y2="460" class="arrow"/>
+
+<text x="770" y="525" class="text">Oui</text>
+<text x="440" y="525" class="text">Non</text>
+
+<!-- FIX -->
+<rect x="120" y="500" width="260" height="90" class="retry"/>
+<text x="250" y="525" class="text">Analyser l'écart</text>
+<text x="250" y="545" class="text">Corriger logique dbt</text>
+<text x="250" y="565" class="text">Rebuild modèle</text>
+
+<line x1="440" y1="540" x2="380" y2="540" class="arrow"/>
+<line x1="250" y1="500" x2="430" y2="370" class="retryArrow"/>
+
+<!-- FINANCE VALIDATION -->
+<rect x="830" y="500" width="260" height="90" class="step"/>
+<text x="960" y="525" class="text">Validation Finance</text>
+<text x="960" y="545" class="text">Validation métier</text>
+<text x="960" y="565" class="text">Analyse des impacts dashboards</text>
+
+<line x1="760" y1="540" x2="830" y2="540" class="arrow"/>
+
+<!-- DECISION 2 -->
+<polygon points="960,640 1100,720 960,800 820,720" class="decision"/>
+<text x="960" y="720" class="text">Validation Finance OK ?</text>
+
+<line x1="960" y1="590" x2="960" y2="640" class="arrow"/>
+
+<!-- labels -->
+<text x="960" y="820" class="text">Oui</text>
+<text x="820" y="710" class="text">Non</text>
+
+<!-- FINANCE REWORK -->
+<line x1="820" y1="720" x2="600" y2="380" class="retryArrow"/>
+
+<!-- PILOT -->
+<rect x="450" y="720" width="300" height="90" class="step"/>
+<text x="600" y="745" class="text">Bascule dashboard pilote</text>
+<text x="600" y="765" class="text">Monitoring métriques</text>
+<text x="600" y="785" class="text">Surveillance anomalies</text>
+
+<line x1="960" y1="800" x2="600" y2="720" class="arrow"/>
+
+<!-- DECISION 3 -->
+<polygon points="600,840 740,910 600,980 460,910" class="decision"/>
+<text x="600" y="910" class="text">Run stable ?</text>
+
+<line x1="600" y1="810" x2="600" y2="840" class="arrow"/>
+
+<text x="740" y="905" class="text">Oui</text>
+<text x="460" y="905" class="text">Non</text>
+
+<!-- ROLLBACK -->
+<line x1="460" y1="910" x2="340" y2="240" class="retryArrow"/>
+
+<!-- SUCCESS -->
+<rect x="820" y="900" width="250" height="70" class="success"/>
+<text x="945" y="930" class="text">Décommission ancienne vue</text>
+<text x="945" y="950" class="text">Migration terminée</text>
+
+<line x1="740" y1="910" x2="820" y2="930" class="arrow"/>
+
+</svg>
